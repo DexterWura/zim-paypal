@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cards - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link active">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Banks and Cards</h1>
+            </div>
+
+            <div class="cards-container">
+                <div class="card">
+                    <h3>Link a New Card</h3>
+                    <form th:action="@{/cards}" th:object="${cardRequest}" method="post" class="form-card">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cardNumber">Card Number</label>
+                                <input type="text" id="cardNumber" th:field="*{cardNumber}" class="form-control" required placeholder="1234 5678 9012 3456">
+                                <span th:if="${#fields.hasErrors('cardNumber')}" th:errors="*{cardNumber}" class="error-text"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cardholderName">Cardholder Name</label>
+                                <input type="text" id="cardholderName" th:field="*{cardholderName}" class="form-control" required>
+                                <span th:if="${#fields.hasErrors('cardholderName')}" th:errors="*{cardholderName}" class="error-text"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expiryDate">Expiry Date</label>
+                                <input type="date" id="expiryDate" th:field="*{expiryDate}" class="form-control" required>
+                                <span th:if="${#fields.hasErrors('expiryDate')}" th:errors="*{expiryDate}" class="error-text"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="cvv">CVV</label>
+                                <input type="text" id="cvv" th:field="*{cvv}" class="form-control" required placeholder="123">
+                                <span th:if="${#fields.hasErrors('cvv')}" th:errors="*{cvv}" class="error-text"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cardType">Card Type</label>
+                                <select id="cardType" th:field="*{cardType}" class="form-control" required>
+                                    <option value="">Select Type</option>
+                                    <option th:each="type : ${T(com.zim.paypal.model.entity.Card.CardType).values()}" 
+                                            th:value="${type}" th:text="${type}"></option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cardBrand">Card Brand</label>
+                                <select id="cardBrand" th:field="*{cardBrand}" class="form-control" required>
+                                    <option value="">Select Brand</option>
+                                    <option th:each="brand : ${T(com.zim.paypal.model.entity.Card.CardBrand).values()}" 
+                                            th:value="${brand}" th:text="${brand}"></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" th:field="*{isDefault}"> Set as default card
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn-primary btn-block">Link Card</button>
+                    </form>
+                </div>
+
+                <div class="card" th:if="${!cards.isEmpty()}">
+                    <h3>Your Cards</h3>
+                    <div class="cards-list">
+                        <div th:each="card : ${cards}" class="card-item">
+                            <div class="card-info">
+                                <div class="card-brand" th:text="${card.cardBrand}"></div>
+                                <div class="card-number" th:text="${'••••' + card.lastFourDigits}"></div>
+                                <div class="card-details">
+                                    <span th:text="${card.cardType}"></span>
+                                    <span th:if="${card.isDefault}" class="badge">Default</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

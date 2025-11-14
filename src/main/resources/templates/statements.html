@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statements - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link active">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Account Statements</h1>
+            </div>
+
+            <div class="card">
+                <h3>Generate Statement</h3>
+                <form th:action="@{/statements/generate}" method="post" class="form-inline">
+                    <div class="form-group">
+                        <label for="year">Year</label>
+                        <input type="number" id="year" name="year" class="form-control" min="2020" max="2030" th:value="${#dates.year(#dates.createNow())}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="month">Month</label>
+                        <select id="month" name="month" class="form-control" required>
+                            <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}" th:text="${#dates.monthName(m)}"></option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">Generate</button>
+                </form>
+            </div>
+
+            <div class="card" th:if="${!statements.isEmpty()}">
+                <h3>Your Statements</h3>
+                <div class="statement-list">
+                    <div th:each="statement : ${statements}" class="statement-item">
+                        <div class="statement-info">
+                            <div class="statement-number" th:text="${statement.statementNumber}"></div>
+                            <div class="statement-period" 
+                                 th:text="${#temporals.format(statement.startDate, 'MMM dd, yyyy') + ' - ' + #temporals.format(statement.endDate, 'MMM dd, yyyy')}"></div>
+                        </div>
+                        <div class="statement-balance">
+                            <div class="balance-label">Opening Balance</div>
+                            <div class="balance-amount" th:text="${'$' + #numbers.formatDecimal(statement.openingBalance, 1, 2)}"></div>
+                            <div class="balance-label">Closing Balance</div>
+                            <div class="balance-amount" th:text="${'$' + #numbers.formatDecimal(statement.closingBalance, 1, 2)}"></div>
+                        </div>
+                        <div class="statement-summary">
+                            <div>Transactions: <span th:text="${statement.transactionCount}"></span></div>
+                            <div>Credits: <span th:text="${'$' + #numbers.formatDecimal(statement.totalCredits, 1, 2)}"></span></div>
+                            <div>Debits: <span th:text="${'$' + #numbers.formatDecimal(statement.totalDebits, 1, 2)}"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

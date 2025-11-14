@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Money - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Send Money</h1>
+            </div>
+
+            <div class="form-container">
+                <form th:action="@{/send}" th:object="${transferRequest}" method="post" class="form-card">
+                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-error">
+                        <ul>
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="receiverEmail">Send to (Email)</label>
+                        <input type="email" id="receiverEmail" th:field="*{receiverEmail}" class="form-control" required placeholder="recipient@example.com">
+                        <span th:if="${#fields.hasErrors('receiverEmail')}" th:errors="*{receiverEmail}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">Amount</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="amount" th:field="*{amount}" class="form-control" step="0.01" min="0.01" required placeholder="0.00">
+                        </div>
+                        <span th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">What's this for? (Optional)</label>
+                        <input type="text" id="description" th:field="*{description}" class="form-control" placeholder="Payment for services">
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large">Send Money</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

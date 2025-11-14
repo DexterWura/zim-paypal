@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link active">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Transaction History</h1>
+            </div>
+
+            <div class="card">
+                <div class="transaction-table">
+                    <div class="transaction-header">
+                        <div>Date</div>
+                        <div>Type</div>
+                        <div>Description</div>
+                        <div>Amount</div>
+                        <div>Status</div>
+                    </div>
+                    <div th:each="transaction : ${transactions.content}" class="transaction-row">
+                        <div th:text="${#temporals.format(transaction.createdAt, 'MMM dd, yyyy HH:mm')}"></div>
+                        <div th:text="${transaction.transactionType}"></div>
+                        <div th:text="${transaction.description != null ? transaction.description : 'N/A'}"></div>
+                        <div class="transaction-amount" 
+                             th:classappend="${transaction.transactionType == T(com.zim.paypal.model.entity.Transaction.TransactionType).DEPOSIT || (transaction.receiver != null) ? 'positive' : 'negative'}"
+                             th:text="${(transaction.transactionType == T(com.zim.paypal.model.entity.Transaction.TransactionType).DEPOSIT || (transaction.receiver != null)) ? '+' : '-'} + ${'$' + #numbers.formatDecimal(transaction.amount, 1, 2)}">
+                        </div>
+                        <div>
+                            <span class="status-badge" th:classappend="${'status-' + transaction.status.name().toLowerCase()}" 
+                                  th:text="${transaction.status}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pagination" th:if="${transactions.totalPages > 1}">
+                    <a th:href="@{/transactions(page=${currentPage > 0 ? currentPage - 1 : 0})}" 
+                       th:classappend="${currentPage == 0 ? 'disabled' : ''}">Previous</a>
+                    <span th:text="${'Page ' + (currentPage + 1) + ' of ' + totalPages}"></span>
+                    <a th:href="@{/transactions(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage})}" 
+                       th:classappend="${currentPage >= totalPages - 1 ? 'disabled' : ''}">Next</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

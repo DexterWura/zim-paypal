@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link active">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <span class="user-name" th:text="${user.firstName}"></span>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="dashboard-grid">
+                <!-- Left Column -->
+                <div class="dashboard-left">
+                    <!-- Account Balance Card -->
+                    <div class="card balance-card">
+                        <h3>Available Balance</h3>
+                        <div class="balance-amount" th:text="${'$' + #numbers.formatDecimal(balance, 1, 2)}">$0.00</div>
+                        <p class="balance-label" th:text="${account.accountNumber}"></p>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <h3>Quick Actions</h3>
+                        <div class="action-buttons">
+                            <a th:href="@{/send}" class="btn-primary btn-large">Send</a>
+                            <a th:href="@{/pay}" class="btn-secondary btn-large">Request</a>
+                        </div>
+                    </div>
+
+                    <!-- Recent Transactions -->
+                    <div class="card">
+                        <h3>Recent Activity</h3>
+                        <div class="transaction-list">
+                            <div th:each="transaction : ${transactions}" class="transaction-item">
+                                <div class="transaction-info">
+                                    <div class="transaction-type" th:text="${transaction.transactionType}"></div>
+                                    <div class="transaction-date" th:text="${#temporals.format(transaction.createdAt, 'MMM dd, yyyy')}"></div>
+                                </div>
+                                <div class="transaction-amount" 
+                                     th:classappend="${transaction.transactionType == T(com.zim.paypal.model.entity.Transaction.TransactionType).DEPOSIT || (transaction.receiver != null && transaction.receiver.id == user.id) ? 'positive' : 'negative'"
+                                     th:text="${(transaction.transactionType == T(com.zim.paypal.model.entity.Transaction.TransactionType).DEPOSIT || (transaction.receiver != null && transaction.receiver.id == user.id)) ? '+' : '-'} + ${'$' + #numbers.formatDecimal(transaction.amount, 1, 2)}">
+                                </div>
+                            </div>
+                            <a th:href="@{/transactions}" class="view-all-link">View all transactions →</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="dashboard-right">
+                    <!-- Send/Request Buttons -->
+                    <div class="action-buttons-horizontal">
+                        <a th:href="@{/send}" class="btn-primary btn-large">Send</a>
+                        <a th:href="@{/pay}" class="btn-secondary btn-large">Request</a>
+                    </div>
+
+                    <!-- Quick Actions Grid -->
+                    <div class="card">
+                        <h3>Quick Actions</h3>
+                        <div class="quick-actions-grid">
+                            <a th:href="@{/deposit}" class="quick-action-item">
+                                <div class="quick-action-icon">💰</div>
+                                <span>Deposit</span>
+                            </a>
+                            <a th:href="@{/cards}" class="quick-action-item">
+                                <div class="quick-action-icon">💳</div>
+                                <span>Cards</span>
+                            </a>
+                            <a th:href="@{/statements}" class="quick-action-item">
+                                <div class="quick-action-icon">📄</div>
+                                <span>Statements</span>
+                            </a>
+                            <a th:href="@{/transactions}" class="quick-action-item">
+                                <div class="quick-action-icon">📊</div>
+                                <span>Activity</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Linked Cards -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Banks and Cards</h3>
+                        </div>
+                        <div class="cards-list">
+                            <div th:each="card : ${cards}" class="card-item">
+                                <div class="card-brand" th:text="${card.cardBrand}"></div>
+                                <div class="card-number" th:text="${'••••' + card.lastFourDigits}"></div>
+                                <div class="card-type" th:text="${card.cardType}"></div>
+                            </div>
+                            <a th:href="@{/cards}" class="link-card">Link a Card or Bank</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo">
+                    <span class="logo-icon">P</span>
+                    <span class="logo-text">Zim PayPal</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+

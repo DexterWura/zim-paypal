@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title != null ? title + ' - Zim PayPal' : 'Zim PayPal'}">Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav" sec:authorize="isAuthenticated()">
+                    <a th:href="@{/dashboard}" class="nav-link" th:classappend="${#httpServletRequest.requestURI == '/dashboard' ? 'active' : ''}">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link" th:classappend="${#httpServletRequest.requestURI == '/transactions' ? 'active' : ''}">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link" th:classappend="${#httpServletRequest.requestURI == '/cards' ? 'active' : ''}">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link" th:classappend="${#httpServletRequest.requestURI == '/statements' ? 'active' : ''}">Statements</a>
+                </nav>
+                <div class="header-actions" sec:authorize="isAuthenticated()">
+                    <span class="user-name" sec:authentication="name"></span>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+                <div class="header-actions" sec:authorize="!isAuthenticated()">
+                    <a th:href="@{/login}" class="btn-primary">Log In</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+            <div th:if="${message}" class="alert alert-info" th:text="${message}"></div>
+            
+            <div th:replace="${content}"></div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo">
+                    <span class="logo-icon">P</span>
+                    <span class="logo-text">Zim PayPal</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+
