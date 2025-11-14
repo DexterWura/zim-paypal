@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backup Codes - 2FA</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Backup Codes</h1>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <div class="card">
+                <div class="alert alert-warning">
+                    <strong>Important:</strong> Save these backup codes in a safe place. 
+                    You can use them to access your account if you lose access to your 2FA device.
+                    Each code can only be used once.
+                </div>
+
+                <div th:if="${backupCodes != null}" class="backup-codes-grid">
+                    <div th:each="code : ${backupCodes}" class="backup-code-item" th:text="${code}"></div>
+                </div>
+
+                <div th:unless="${backupCodes != null}" class="alert alert-info">
+                    <p>No backup codes available. Please regenerate them.</p>
+                </div>
+
+                <div class="form-actions" style="margin-top: 2rem;">
+                    <form th:action="@{/2fa/regenerate-backup-codes}" method="post">
+                        <button type="submit" class="btn-primary" 
+                                onclick="return confirm('This will invalidate your existing backup codes. Continue?')">
+                            Regenerate Backup Codes
+                        </button>
+                    </form>
+                    <a th:href="@{/2fa/setup}" class="btn-secondary">Back to 2FA Settings</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        .backup-codes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .backup-code-item {
+            padding: 1rem;
+            background-color: var(--gray-light);
+            border: 1px solid var(--gray-medium);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 1.1rem;
+            text-align: center;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+    </style>
+</body>
+</html>
+

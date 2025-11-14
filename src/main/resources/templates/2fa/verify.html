@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify 2FA Code</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Verify Your Code</h1>
+            </div>
+
+            <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+            <div th:if="${code}" class="alert alert-info">
+                <strong>Test Mode:</strong> Your verification code is: <strong th:text="${code}"></strong>
+            </div>
+
+            <div class="card">
+                <form th:action="@{/2fa/setup/complete}" th:object="${setupDto}" method="post" class="form-card">
+                    <input type="hidden" th:field="*{method}" th:value="${method}">
+                    
+                    <div class="form-group">
+                        <label for="verificationCode">Enter Verification Code</label>
+                        <input type="text" id="verificationCode" th:field="*{verificationCode}" 
+                               class="form-control" maxlength="6" required 
+                               placeholder="000000" autocomplete="off">
+                        <small class="form-text">Enter the 6-digit code sent to your 
+                            <span th:text="${method == 'SMS' ? 'phone' : method == 'EMAIL' ? 'email' : 'authenticator app'}"></span>
+                        </small>
+                    </div>
+
+                    <div class="form-group" th:if="${method == 'SMS'}">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input type="tel" id="phoneNumber" th:field="*{phoneNumber}" 
+                               class="form-control" required placeholder="+1234567890">
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large">Verify & Enable 2FA</button>
+                </form>
+
+                <div class="text-center" style="margin-top: 1rem;">
+                    <a th:href="@{/2fa/setup}" class="btn-secondary">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+
