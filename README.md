@@ -18,6 +18,7 @@ A full-featured PayPal clone built with Spring Boot, featuring secure payment pr
 - ✅ **Mobile App API** - RESTful API with JWT authentication for mobile applications
 - ✅ **Webhooks** - Event webhooks with signature verification, retry mechanism, and delivery tracking
 - ✅ **Advanced Reporting** - Financial reports, analytics, and exports (PDF, CSV, Excel, JSON)
+- ✅ **Merchant Tools** - Payment buttons, embeddable widgets, checkout integration, API key management
 
 ### Security & Compliance
 - ✅ **Two-Factor Authentication (2FA)** - SMS, Email, and TOTP/App-based 2FA with backup codes
@@ -82,7 +83,7 @@ A full-featured PayPal clone built with Spring Boot, featuring secure payment pr
 7. ✅ **Advanced Reporting** - Financial reports, analytics, and exports (COMPLETED)
 8. **Bulk Payments** - Batch payment processing
 9. **Payment Plans** - Installment payment plans
-10. **Merchant Tools** - Payment buttons, checkout integration
+10. ✅ **Merchant Tools** - Payment buttons, checkout integration (COMPLETED)
 11. **International Transfers** - Cross-border payment routing
 12. **Account Statements** - PDF statement generation
 
