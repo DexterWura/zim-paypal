@@ -415,5 +415,127 @@ public class NotificationService {
         
         return message.toString();
     }
+
+    /**
+     * Send reversal rejected notification
+     * 
+     * @param reversal TransactionReversal entity
+     */
+    @Async
+    public void sendReversalRejectedNotification(com.zim.paypal.model.entity.TransactionReversal reversal) {
+        try {
+            User user = reversal.getRequestedBy();
+            String subject = "Transaction Reversal Request Rejected: " + reversal.getReversalNumber();
+            String message = buildReversalRejectedMessage(user, reversal);
+            
+            // Send email
+            if (user.getEmail() != null && user.getEmailVerified()) {
+                Notification emailNotification = Notification.builder()
+                        .user(user)
+                        .notificationType(Notification.NotificationType.ACCOUNT_UPDATE)
+                        .channel(Notification.NotificationChannel.EMAIL)
+                        .recipient(user.getEmail())
+                        .subject(subject)
+                        .message(message)
+                        .status(Notification.NotificationStatus.PENDING)
+                        .referenceId(reversal.getReversalNumber())
+                        .build();
+                
+                emailNotification = notificationRepository.save(emailNotification);
+                
+                try {
+                    emailService.sendEmail(user.getEmail(), subject, message);
+                    emailNotification.markAsSent();
+                    notificationRepository.save(emailNotification);
+                } catch (Exception e) {
+                    emailNotification.markAsFailed(e.getMessage());
+                    notificationRepository.save(emailNotification);
+                    log.error("Failed to send email notification: {}", e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error sending reversal rejected notification: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Send reversal processed notification
+     * 
+     * @param reversal TransactionReversal entity
+     */
+    @Async
+    public void sendReversalProcessedNotification(com.zim.paypal.model.entity.TransactionReversal reversal) {
+        try {
+            User user = reversal.getRequestedBy();
+            String subject = "Transaction Reversal Processed: " + reversal.getReversalNumber();
+            String message = buildReversalProcessedMessage(user, reversal);
+            
+            // Send email
+            if (user.getEmail() != null && user.getEmailVerified()) {
+                Notification emailNotification = Notification.builder()
+                        .user(user)
+                        .notificationType(Notification.NotificationType.PAYMENT_RECEIVED)
+                        .channel(Notification.NotificationChannel.EMAIL)
+                        .recipient(user.getEmail())
+                        .subject(subject)
+                        .message(message)
+                        .status(Notification.NotificationStatus.PENDING)
+                        .referenceId(reversal.getReversalNumber())
+                        .build();
+                
+                emailNotification = notificationRepository.save(emailNotification);
+                
+                try {
+                    emailService.sendEmail(user.getEmail(), subject, message);
+                    emailNotification.markAsSent();
+                    notificationRepository.save(emailNotification);
+                } catch (Exception e) {
+                    emailNotification.markAsFailed(e.getMessage());
+                    notificationRepository.save(emailNotification);
+                    log.error("Failed to send email notification: {}", e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error sending reversal processed notification: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Build reversal rejected message
+     */
+    private String buildReversalRejectedMessage(User user, com.zim.paypal.model.entity.TransactionReversal reversal) {
+        StringBuilder message = new StringBuilder();
+        message.append("Hello ").append(user.getFirstName()).append(",\n\n");
+        message.append("Your transaction reversal request has been rejected.\n\n");
+        message.append("Reversal Number: ").append(reversal.getReversalNumber()).append("\n");
+        message.append("Transaction ID: ").append(reversal.getTransaction().getId()).append("\n");
+        message.append("Amount: ").append(reversal.getReversalAmount()).append("\n");
+        if (reversal.getAdminNotes() != null && !reversal.getAdminNotes().isEmpty()) {
+            message.append("Reason: ").append(reversal.getAdminNotes()).append("\n");
+        }
+        message.append("\nIf you have any questions, please contact support.\n\n");
+        message.append("Thank you for using Zim PayPal!");
+        
+        return message.toString();
+    }
+
+    /**
+     * Build reversal processed message
+     */
+    private String buildReversalProcessedMessage(User user, com.zim.paypal.model.entity.TransactionReversal reversal) {
+        StringBuilder message = new StringBuilder();
+        message.append("Hello ").append(user.getFirstName()).append(",\n\n");
+        message.append("Your transaction reversal has been processed successfully.\n\n");
+        message.append("Reversal Number: ").append(reversal.getReversalNumber()).append("\n");
+        message.append("Transaction ID: ").append(reversal.getTransaction().getId()).append("\n");
+        message.append("Reversal Amount: ").append(reversal.getReversalAmount()).append("\n");
+        if (reversal.getReversalTransaction() != null) {
+            message.append("Reversal Transaction ID: ").append(reversal.getReversalTransaction().getId()).append("\n");
+        }
+        message.append("\nThe funds have been returned to your account.\n\n");
+        message.append("Thank you for using Zim PayPal!");
+        
+        return message.toString();
+    }
 }
 

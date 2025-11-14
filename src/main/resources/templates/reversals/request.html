@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Transaction Reversal - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Request Transaction Reversal</h1>
+                <a th:href="@{/reversals/my-reversals}" class="btn-secondary">← My Reversals</a>
+            </div>
+
+            <div class="form-container">
+                <form th:action="@{/reversals/request}" th:object="${reversalDto}" method="post" class="form-card">
+                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-error">
+                        <ul>
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="transactionId">Transaction ID</label>
+                        <input type="number" id="transactionId" th:field="*{transactionId}" class="form-control" required 
+                               placeholder="Enter transaction ID">
+                        <span th:if="${#fields.hasErrors('transactionId')}" th:errors="*{transactionId}" class="error-text"></span>
+                        <small class="form-text">Enter the ID of the transaction you want to reverse</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reversalType">Reversal Type</label>
+                        <select id="reversalType" th:field="*{reversalType}" class="form-control" required>
+                            <option value="">Select Type</option>
+                            <option th:each="type : ${T(com.zim.paypal.model.entity.TransactionReversal.ReversalType).values()}" 
+                                    th:value="${type}" th:text="${type}"></option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('reversalType')}" th:errors="*{reversalType}" class="error-text"></span>
+                        <small class="form-text">
+                            <strong>FULL:</strong> Reverse the entire transaction amount<br>
+                            <strong>PARTIAL:</strong> Reverse a portion of the transaction<br>
+                            <strong>REFUND:</strong> Refund the transaction
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reversalAmount">Reversal Amount</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="reversalAmount" th:field="*{reversalAmount}" class="form-control" 
+                                   step="0.01" min="0.01" required placeholder="0.00">
+                        </div>
+                        <span th:if="${#fields.hasErrors('reversalAmount')}" th:errors="*{reversalAmount}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reason">Reason for Reversal</label>
+                        <textarea id="reason" th:field="*{reason}" class="form-control" rows="6" required 
+                                  placeholder="Please provide a detailed reason for requesting this reversal..."></textarea>
+                        <span th:if="${#fields.hasErrors('reason')}" th:errors="*{reason}" class="error-text"></span>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> Reversal requests are reviewed by our support team. 
+                        You will be notified once your request has been processed.
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large">Submit Reversal Request</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

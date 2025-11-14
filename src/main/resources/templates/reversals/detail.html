@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reversal Details - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Reversal: <span th:text="${reversal.reversalNumber}"></span></h1>
+                <a th:href="@{/reversals/my-reversals}" class="btn-secondary">← Back to Reversals</a>
+            </div>
+
+            <!-- Reversal Info -->
+            <div class="card">
+                <div class="ticket-info-header">
+                    <div>
+                        <h3>Transaction Reversal Request</h3>
+                        <div class="ticket-meta">
+                            <span class="badge-role" th:text="${reversal.reversalType}"></span>
+                            <span class="status-badge" 
+                                  th:classappend="${'status-' + reversal.status.name().toLowerCase().replace('_', '-')}" 
+                                  th:text="${reversal.status}">
+                            </span>
+                        </div>
+                    </div>
+                    <div class="split-amount-section">
+                        <div class="split-total">
+                            <div class="split-label">Reversal Amount</div>
+                            <div class="split-amount-large" th:text="${'$' + #numbers.formatDecimal(reversal.reversalAmount, 1, 2)}">$0.00</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ticket-description">
+                    <strong>Reason:</strong>
+                    <p th:text="${reversal.reason}"></p>
+                </div>
+                <div class="ticket-details">
+                    <div><strong>Transaction ID:</strong> <span th:text="${reversal.transaction.id}"></span></div>
+                    <div><strong>Requested by:</strong> <span th:text="${reversal.requestedBy.firstName + ' ' + reversal.requestedBy.lastName}"></span></div>
+                    <div><strong>Created:</strong> <span th:text="${#temporals.format(reversal.createdAt, 'MMM dd, yyyy HH:mm')}"></span></div>
+                    <div th:if="${reversal.processedBy != null}">
+                        <strong>Processed by:</strong> <span th:text="${reversal.processedBy.username}"></span>
+                    </div>
+                    <div th:if="${reversal.processedAt != null}">
+                        <strong>Processed at:</strong> <span th:text="${#temporals.format(reversal.processedAt, 'MMM dd, yyyy HH:mm')}"></span>
+                    </div>
+                    <div th:if="${reversal.reversalTransaction != null}">
+                        <strong>Reversal Transaction ID:</strong> <span th:text="${reversal.reversalTransaction.id}"></span>
+                    </div>
+                    <div th:if="${reversal.adminNotes != null}">
+                        <strong>Admin Notes:</strong> <span th:text="${reversal.adminNotes}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Actions -->
+            <div class="card" th:if="${isAdmin && reversal.status == T(com.zim.paypal.model.entity.TransactionReversal.ReversalStatus).PENDING}">
+                <h3>Admin Actions</h3>
+                <div class="admin-actions-grid">
+                    <form th:action="@{/reversals/admin/reversals/{id}/approve(id=${reversal.id})}" method="post" class="action-form">
+                        <div class="form-group">
+                            <label>Admin Notes (Optional)</label>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="Add notes..."></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary btn-block">Approve Reversal</button>
+                    </form>
+
+                    <form th:action="@{/reversals/admin/reversals/{id}/reject(id=${reversal.id})}" method="post" class="action-form">
+                        <div class="form-group">
+                            <label>Rejection Reason</label>
+                            <textarea name="notes" class="form-control" rows="3" required placeholder="Enter rejection reason..."></textarea>
+                        </div>
+                        <button type="submit" class="btn-secondary btn-block">Reject Reversal</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card" th:if="${isAdmin && reversal.status == T(com.zim.paypal.model.entity.TransactionReversal.ReversalStatus).APPROVED}">
+                <h3>Process Reversal</h3>
+                <form th:action="@{/reversals/admin/reversals/{id}/process(id=${reversal.id})}" method="post">
+                    <p>This reversal has been approved. Click below to process it and create the reversal transaction.</p>
+                    <button type="submit" class="btn-primary">Process Reversal</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

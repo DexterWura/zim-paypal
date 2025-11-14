@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Reversals - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">Dashboard</a>
+                    <a th:href="@{/admin/users}" class="nav-link">Users</a>
+                    <a th:href="@{/admin/transactions}" class="nav-link">Transactions</a>
+                    <a th:href="@{/admin/accounts}" class="nav-link">Accounts</a>
+                    <a th:href="@{/support/admin/tickets}" class="nav-link">Support</a>
+                    <a th:href="@{/reversals/admin/reversals}" class="nav-link active">Reversals</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Transaction Reversals Management</h1>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-grid" style="margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Reversals</div>
+                        <div class="stat-value" th:text="${stats.totalReversals}">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Pending</div>
+                        <div class="stat-value" th:text="${stats.pendingReversals}">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Approved</div>
+                        <div class="stat-value" th:text="${stats.approvedReversals}">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✓</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Processed</div>
+                        <div class="stat-value" th:text="${stats.processedReversals}">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter -->
+            <div class="card">
+                <form th:action="@{/reversals/admin/reversals}" method="get" class="search-form">
+                    <select name="status" class="form-control">
+                        <option value="">All Statuses</option>
+                        <option th:each="stat : ${T(com.zim.paypal.model.entity.TransactionReversal.ReversalStatus).values()}" 
+                                th:value="${stat}" 
+                                th:selected="${stat.name() == status}"
+                                th:text="${stat}">
+                        </option>
+                    </select>
+                    <button type="submit" class="btn-primary">Filter</button>
+                    <a th:href="@{/reversals/admin/reversals}" class="btn-secondary">Clear</a>
+                </form>
+            </div>
+
+            <!-- Reversals Table -->
+            <div class="card">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Reversal #</th>
+                            <th>Transaction ID</th>
+                            <th>Requested By</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="reversal : ${reversals.content}">
+                            <td th:text="${reversal.reversalNumber}"></td>
+                            <td th:text="${reversal.transaction.id}"></td>
+                            <td th:text="${reversal.requestedBy.username}"></td>
+                            <td th:text="${reversal.reversalType}"></td>
+                            <td th:text="${'$' + #numbers.formatDecimal(reversal.reversalAmount, 1, 2)}"></td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${'status-' + reversal.status.name().toLowerCase().replace('_', '-')}" 
+                                      th:text="${reversal.status}">
+                                </span>
+                            </td>
+                            <td th:text="${#temporals.format(reversal.createdAt, 'MMM dd, yyyy')}"></td>
+                            <td>
+                                <a th:href="@{/reversals/admin/reversals/{id}(id=${reversal.id})}" class="btn-secondary btn-small">View</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination" th:if="${reversals.totalPages > 1}">
+                    <a th:href="@{/reversals/admin/reversals(page=${currentPage > 0 ? currentPage - 1 : 0}, status=${status})}" 
+                       th:classappend="${currentPage == 0 ? 'disabled' : ''}">Previous</a>
+                    <span th:text="${'Page ' + (currentPage + 1) + ' of ' + totalPages}"></span>
+                    <a th:href="@{/reversals/admin/reversals(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage}, status=${status})}" 
+                       th:classappend="${currentPage >= totalPages - 1 ? 'disabled' : ''}">Next</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

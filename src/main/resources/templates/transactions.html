@@ -45,6 +45,7 @@
                         <div>Description</div>
                         <div>Amount</div>
                         <div>Status</div>
+                        <div>Actions</div>
                     </div>
                     <div th:each="transaction : ${transactions.content}" class="transaction-row">
                         <div th:text="${#temporals.format(transaction.createdAt, 'MMM dd, yyyy HH:mm')}"></div>
@@ -57,6 +58,13 @@
                         <div>
                             <span class="status-badge" th:classappend="${'status-' + transaction.status.name().toLowerCase()}" 
                                   th:text="${transaction.status}"></span>
+                        </div>
+                        <div>
+                            <a th:href="@{/reversals/request(transactionId=${transaction.id})}" 
+                               class="btn-secondary btn-small" 
+                               th:if="${transaction.status == T(com.zim.paypal.model.entity.Transaction.TransactionStatus).COMPLETED && (transaction.description == null || !transaction.description.startsWith('Reversal:'))}">
+                                Request Reversal
+                            </a>
                         </div>
                     </div>
                 </div>

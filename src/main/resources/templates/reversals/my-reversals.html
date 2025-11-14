@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Reversals - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>My Transaction Reversals</h1>
+                <a th:href="@{/reversals/request}" class="btn-primary">Request Reversal</a>
+            </div>
+
+            <div class="card">
+                <div class="ticket-table">
+                    <div class="ticket-header-row">
+                        <div>Reversal #</div>
+                        <div>Transaction ID</div>
+                        <div>Type</div>
+                        <div>Amount</div>
+                        <div>Status</div>
+                        <div>Created</div>
+                        <div>Actions</div>
+                    </div>
+                    <div th:each="reversal : ${reversals.content}" class="ticket-row">
+                        <div th:text="${reversal.reversalNumber}"></div>
+                        <div th:text="${reversal.transaction.id}"></div>
+                        <div th:text="${reversal.reversalType}"></div>
+                        <div th:text="${'$' + #numbers.formatDecimal(reversal.reversalAmount, 1, 2)}"></div>
+                        <div>
+                            <span class="status-badge" 
+                                  th:classappend="${'status-' + reversal.status.name().toLowerCase().replace('_', '-')}" 
+                                  th:text="${reversal.status}">
+                            </span>
+                        </div>
+                        <div th:text="${#temporals.format(reversal.createdAt, 'MMM dd, yyyy')}"></div>
+                        <div>
+                            <a th:href="@{/reversals/{id}(id=${reversal.id})}" class="btn-secondary btn-small">View</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pagination" th:if="${reversals.totalPages > 1}">
+                    <a th:href="@{/reversals/my-reversals(page=${currentPage > 0 ? currentPage - 1 : 0})}" 
+                       th:classappend="${currentPage == 0 ? 'disabled' : ''}">Previous</a>
+                    <span th:text="${'Page ' + (currentPage + 1) + ' of ' + totalPages}"></span>
+                    <a th:href="@{/reversals/my-reversals(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage})}" 
+                       th:classappend="${currentPage >= totalPages - 1 ? 'disabled' : ''}">Next</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

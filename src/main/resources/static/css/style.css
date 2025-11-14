@@ -421,7 +421,7 @@ body {
 
 .transaction-header {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 2fr 1fr 1fr;
+    grid-template-columns: 1.5fr 1fr 2fr 1fr 1fr 1fr;
     gap: 1rem;
     padding: 1rem;
     background-color: var(--gray-light);
@@ -431,7 +431,7 @@ body {
 
 .transaction-row {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 2fr 1fr 1fr;
+    grid-template-columns: 1.5fr 1fr 2fr 1fr 1fr 1fr;
     gap: 1rem;
     padding: 1rem;
     border-bottom: 1px solid var(--gray-medium);
