@@ -29,6 +29,7 @@ public class TransactionService {
     private final UserService userService;
     private final CardService cardService;
     private final NotificationService notificationService;
+    private final RewardsService rewardsService;
     private static final BigDecimal TRANSFER_FEE_RATE = new BigDecimal("0.029"); // 2.9%
     private static final BigDecimal MIN_TRANSFER_FEE = new BigDecimal("0.30");
     private static final BigDecimal MAX_TRANSFER_FEE = new BigDecimal("2.99");
@@ -67,6 +68,13 @@ public class TransactionService {
         
         // Send notification
         notificationService.sendTransactionNotification(savedTransaction);
+        
+        // Award rewards points
+        try {
+            rewardsService.earnPointsFromTransaction(user.getId(), savedTransaction);
+        } catch (Exception e) {
+            log.warn("Failed to award rewards points: {}", e.getMessage());
+        }
         
         log.info("Deposit transaction created: {}", savedTransaction.getTransactionNumber());
         return savedTransaction;
@@ -124,6 +132,13 @@ public class TransactionService {
         // Send notifications
         notificationService.sendTransactionNotification(savedTransaction);
         
+        // Award rewards points to sender
+        try {
+            rewardsService.earnPointsFromTransaction(sender.getId(), savedTransaction);
+        } catch (Exception e) {
+            log.warn("Failed to award rewards points: {}", e.getMessage());
+        }
+        
         log.info("Transfer transaction created: {}", savedTransaction.getTransactionNumber());
         return savedTransaction;
     }
@@ -172,6 +187,13 @@ public class TransactionService {
         
         // Send notification
         notificationService.sendTransactionNotification(savedTransaction);
+        
+        // Award rewards points
+        try {
+            rewardsService.earnPointsFromTransaction(userId, savedTransaction);
+        } catch (Exception e) {
+            log.warn("Failed to award rewards points: {}", e.getMessage());
+        }
         
         log.info("Payment transaction created: {}", savedTransaction.getTransactionNumber());
         return savedTransaction;
@@ -225,6 +247,13 @@ public class TransactionService {
         
         // Send notification
         notificationService.sendTransactionNotification(savedTransaction);
+        
+        // Award rewards points
+        try {
+            rewardsService.earnPointsFromTransaction(userId, savedTransaction);
+        } catch (Exception e) {
+            log.warn("Failed to award rewards points: {}", e.getMessage());
+        }
         
         log.info("Card payment transaction created: {}", savedTransaction.getTransactionNumber());
         return savedTransaction;

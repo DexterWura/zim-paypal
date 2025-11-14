@@ -37,6 +37,15 @@
             <div class="dashboard-grid">
                 <!-- Left Column -->
                 <div class="dashboard-left">
+                    <!-- PayPal Rewards Card -->
+                    <div class="card rewards-card">
+                        <h3>PayPal Rewards</h3>
+                        <div class="rewards-points" th:text="${rewards.points + ' points'}">0 points</div>
+                        <div class="rewards-cashback" th:text="${'$' + #numbers.formatDecimal(rewards.cashBackValue, 1, 2) + ' cash back value'}">$0.00 cash back value</div>
+                        <p class="rewards-label">Available balance</p>
+                        <a th:href="@{/rewards}" class="rewards-link">Ways to earn</a>
+                    </div>
+
                     <!-- Account Balance Card -->
                     <div class="card balance-card">
                         <h3>Available Balance</h3>

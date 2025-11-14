@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rewards - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>PayPal Rewards</h1>
+            </div>
+
+            <!-- Rewards Summary -->
+            <div class="card rewards-summary-card">
+                <div class="rewards-summary">
+                    <div class="rewards-summary-item">
+                        <div class="rewards-summary-label">Available Points</div>
+                        <div class="rewards-summary-value" th:text="${rewards.points}">0</div>
+                    </div>
+                    <div class="rewards-summary-item">
+                        <div class="rewards-summary-label">Cash Back Value</div>
+                        <div class="rewards-summary-value" th:text="${'$' + #numbers.formatDecimal(rewards.cashBackValue, 1, 2)}">$0.00</div>
+                    </div>
+                    <div class="rewards-summary-item">
+                        <div class="rewards-summary-label">Rewards Tier</div>
+                        <div class="rewards-summary-value rewards-tier" th:classappend="${'tier-' + rewards.tier.name().toLowerCase()}" 
+                             th:text="${rewards.tier}">BRONZE</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Redeem Points -->
+            <div class="card">
+                <h3>Redeem Points</h3>
+                <p>100 points = $1.00</p>
+                <form th:action="@{/rewards/redeem}" method="post" class="redeem-form">
+                    <div class="form-group">
+                        <label for="points">Points to Redeem</label>
+                        <input type="number" id="points" name="points" class="form-control" 
+                               min="100" step="100" required placeholder="Minimum 100 points">
+                    </div>
+                    <button type="submit" class="btn-primary">Redeem Points</button>
+                </form>
+            </div>
+
+            <!-- Rewards Statistics -->
+            <div class="card">
+                <h3>Rewards Statistics</h3>
+                <div class="rewards-stats">
+                    <div class="rewards-stat-item">
+                        <div class="rewards-stat-label">Lifetime Points</div>
+                        <div class="rewards-stat-value" th:text="${rewards.lifetimePoints}">0</div>
+                    </div>
+                    <div class="rewards-stat-item">
+                        <div class="rewards-stat-label">Total Earned</div>
+                        <div class="rewards-stat-value" th:text="${'$' + #numbers.formatDecimal(rewards.totalEarned, 1, 2)}">$0.00</div>
+                    </div>
+                    <div class="rewards-stat-item">
+                        <div class="rewards-stat-label">Total Redeemed</div>
+                        <div class="rewards-stat-value" th:text="${'$' + #numbers.formatDecimal(rewards.totalRedeemed, 1, 2)}">$0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ways to Earn -->
+            <div class="card">
+                <h3>Ways to Earn Points</h3>
+                <div class="ways-to-earn">
+                    <div class="earn-item">
+                        <div class="earn-icon">💳</div>
+                        <div class="earn-details">
+                            <div class="earn-title">Make Payments</div>
+                            <div class="earn-description">Earn 1 point per dollar spent (multiplied by your tier)</div>
+                        </div>
+                    </div>
+                    <div class="earn-item">
+                        <div class="earn-icon">📤</div>
+                        <div class="earn-details">
+                            <div class="earn-title">Send Money</div>
+                            <div class="earn-description">Earn points when you send money to friends and family</div>
+                        </div>
+                    </div>
+                    <div class="earn-item">
+                        <div class="earn-icon">⭐</div>
+                        <div class="earn-details">
+                            <div class="earn-title">Tier Multipliers</div>
+                            <div class="earn-description">
+                                <strong>Bronze:</strong> 1x | <strong>Silver:</strong> 1.5x | 
+                                <strong>Gold:</strong> 2x | <strong>Platinum:</strong> 2.5x
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

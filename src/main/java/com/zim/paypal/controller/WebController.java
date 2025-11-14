@@ -16,8 +16,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.zim.paypal.model.entity.MoneyRequest;
-import com.zim.paypal.model.entity.Transaction;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -37,6 +35,7 @@ public class WebController {
     private final CardService cardService;
     private final StatementService statementService;
     private final MoneyRequestService moneyRequestService;
+    private final RewardsService rewardsService;
 
     @GetMapping("/")
     public String home() {
@@ -80,7 +79,11 @@ public class WebController {
                     .phoneNumber(request.getPhoneNumber())
                     .build();
 
-            userService.registerUser(user);
+            User savedUser = userService.registerUser(user);
+            
+            // Initialize rewards for new user
+            rewardsService.initializeRewards(savedUser);
+            
             redirectAttributes.addFlashAttribute("success", "Registration successful! Please login.");
             return "redirect:/login";
         } catch (IllegalArgumentException e) {
@@ -100,8 +103,11 @@ public class WebController {
         Page<Transaction> transactions = transactionService.getTransactionsByUser(user.getId(), pageable);
 
         // Get pending money requests
-        List<com.zim.paypal.model.entity.MoneyRequest> pendingRequests = 
+        List<MoneyRequest> pendingRequests = 
                 moneyRequestService.getPendingRequestsForRecipient(user.getId());
+
+        // Get rewards
+        Rewards rewards = rewardsService.getRewardsByUserId(user.getId());
 
         model.addAttribute("user", user);
         model.addAttribute("account", account);
@@ -110,6 +116,7 @@ public class WebController {
         model.addAttribute("balance", account.getBalance());
         model.addAttribute("pendingRequests", pendingRequests);
         model.addAttribute("pendingRequestCount", pendingRequests.size());
+        model.addAttribute("rewards", rewards);
 
         return "dashboard";
     }
@@ -288,12 +295,12 @@ public class WebController {
 
     @GetMapping("/request")
     public String showRequestForm(Model model) {
-        model.addAttribute("moneyRequestDto", new com.zim.paypal.model.dto.MoneyRequestDto());
+        model.addAttribute("moneyRequestDto", new MoneyRequestDto());
         return "request";
     }
 
     @PostMapping("/request")
-    public String createRequest(@Valid @ModelAttribute com.zim.paypal.model.dto.MoneyRequestDto requestDto,
+    public String createRequest(@Valid @ModelAttribute MoneyRequestDto requestDto,
                                 BindingResult result,
                                 Authentication authentication,
                                 RedirectAttributes redirectAttributes) {
@@ -303,7 +310,7 @@ public class WebController {
 
         try {
             User user = userService.findByUsername(authentication.getName());
-            com.zim.paypal.model.entity.MoneyRequest request = moneyRequestService.createRequest(
+            MoneyRequest request = moneyRequestService.createRequest(
                     user.getId(), 
                     requestDto.getRecipientEmail(), 
                     requestDto.getAmount(), 
@@ -324,13 +331,13 @@ public class WebController {
                           Model model) {
         User user = userService.findByUsername(authentication.getName());
         Pageable pageable = PageRequest.of(page, size);
-        Page<com.zim.paypal.model.entity.MoneyRequest> requests = 
+        Page<MoneyRequest> requests = 
                 moneyRequestService.getRequestsByUser(user.getId(), pageable);
 
         // Get pending requests separately
-        List<com.zim.paypal.model.entity.MoneyRequest> pendingReceived = 
+        List<MoneyRequest> pendingReceived = 
                 moneyRequestService.getPendingRequestsForRecipient(user.getId());
-        List<com.zim.paypal.model.entity.MoneyRequest> pendingSent = 
+        List<MoneyRequest> pendingSent = 
                 moneyRequestService.getPendingRequestsForRequester(user.getId());
 
         model.addAttribute("user", user);
@@ -386,5 +393,33 @@ public class WebController {
             return "redirect:/requests";
         }
     }
-}
 
+    @GetMapping("/rewards")
+    public String rewards(Authentication authentication, Model model) {
+        User user = userService.findByUsername(authentication.getName());
+        Rewards rewards = rewardsService.getRewardsByUserId(user.getId());
+        model.addAttribute("rewards", rewards);
+        return "rewards";
+    }
+
+    @PostMapping("/rewards/redeem")
+    public String redeemPoints(@RequestParam Integer points,
+                              Authentication authentication,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            BigDecimal cashValue = rewardsService.redeemPoints(user.getId(), points);
+            
+            // Deposit the redeemed cash into account
+            Account account = accountService.findActiveAccountByUser(user);
+            accountService.deposit(account.getId(), cashValue);
+            
+            redirectAttributes.addFlashAttribute("success", 
+                    "Redeemed " + points + " points for $" + cashValue + "!");
+            return "redirect:/rewards";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/rewards";
+        }
+    }
+}
