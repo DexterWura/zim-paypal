@@ -31,6 +31,8 @@ public class TransactionService {
     private final NotificationService notificationService;
     private final RewardsService rewardsService;
     private final AccountLimitService accountLimitService;
+    private final FraudDetectionService fraudDetectionService;
+    private final AmlService amlService;
     private static final BigDecimal TRANSFER_FEE_RATE = new BigDecimal("0.029"); // 2.9%
     private static final BigDecimal MIN_TRANSFER_FEE = new BigDecimal("0.30");
     private static final BigDecimal MAX_TRANSFER_FEE = new BigDecimal("2.99");
@@ -61,6 +63,19 @@ public class TransactionService {
         
         transaction.calculateNetAmount();
         Transaction savedTransaction = transactionRepository.save(transaction);
+        
+        // Perform fraud and AML checks
+        try {
+            fraudDetectionService.analyzeTransaction(savedTransaction);
+            if (!amlService.performAmlCheck(savedTransaction)) {
+                savedTransaction.markAsFailed("Transaction failed AML compliance check");
+                transactionRepository.save(savedTransaction);
+                throw new IllegalStateException("Transaction failed AML compliance check");
+            }
+        } catch (Exception e) {
+            log.warn("Fraud/AML check failed: {}", e.getMessage());
+            // Continue with transaction but flag it
+        }
         
         // Process deposit
         accountService.deposit(account.getId(), amount);
@@ -127,6 +142,28 @@ public class TransactionService {
         
         transaction.calculateNetAmount();
         Transaction savedTransaction = transactionRepository.save(transaction);
+        
+        // Perform fraud and AML checks
+        try {
+            RiskScore riskScore = fraudDetectionService.analyzeTransaction(savedTransaction);
+            if (!amlService.performAmlCheck(savedTransaction)) {
+                savedTransaction.markAsFailed("Transaction failed AML compliance check");
+                transactionRepository.save(savedTransaction);
+                throw new IllegalStateException("Transaction failed AML compliance check");
+            }
+            
+            // If critical risk, block transaction
+            if (riskScore.getRiskLevel() == RiskScore.RiskLevel.CRITICAL) {
+                savedTransaction.markAsFailed("Transaction blocked due to high fraud risk");
+                transactionRepository.save(savedTransaction);
+                throw new IllegalStateException("Transaction blocked due to high fraud risk");
+            }
+        } catch (Exception e) {
+            log.warn("Fraud/AML check failed: {}", e.getMessage());
+            if (e instanceof IllegalStateException) {
+                throw e;
+            }
+        }
         
         // Process transfer
         accountService.withdraw(senderAccount.getId(), totalAmount);

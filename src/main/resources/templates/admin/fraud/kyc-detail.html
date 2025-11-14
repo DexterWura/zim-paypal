@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Detail - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/fraud/kyc}" class="nav-link">← Back to KYC</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>KYC Verification Detail</h1>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <div class="card">
+                <div class="form-group">
+                    <label>User</label>
+                    <div th:text="${verification.user.username}"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Verification Level</label>
+                    <div th:text="${verification.verificationLevel}"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <div>
+                        <span class="status-badge" 
+                              th:classappend="${'status-' + verification.verificationStatus.name().toLowerCase()}" 
+                              th:text="${verification.verificationStatus}">
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group" th:if="${verification.documentType != null}">
+                    <label>Document Type</label>
+                    <div th:text="${verification.documentType}"></div>
+                </div>
+
+                <div class="form-group" th:if="${verification.documentNumber != null}">
+                    <label>Document Number</label>
+                    <div th:text="${verification.documentNumber}"></div>
+                </div>
+
+                <div class="form-group" th:if="${verification.dateOfBirth != null}">
+                    <label>Date of Birth</label>
+                    <div th:text="${#temporals.format(verification.dateOfBirth, 'MMM dd, yyyy')}"></div>
+                </div>
+
+                <div class="form-group" th:if="${verification.address != null}">
+                    <label>Address</label>
+                    <div th:text="${verification.address}"></div>
+                </div>
+
+                <div class="form-group" th:if="${verification.verificationNotes != null}">
+                    <label>Notes</label>
+                    <div th:text="${verification.verificationNotes}"></div>
+                </div>
+
+                <div class="form-actions" th:if="${verification.verificationStatus == T(com.zim.paypal.model.entity.KycVerification.VerificationStatus).PENDING}">
+                    <form th:action="@{/admin/fraud/kyc/{id}/approve(id=${verification.id})}" method="post" style="display: inline;">
+                        <input type="text" name="notes" placeholder="Approval notes" class="form-control" style="margin-bottom: 0.5rem;">
+                        <button type="submit" class="btn-primary">Approve</button>
+                    </form>
+                    <form th:action="@{/admin/fraud/kyc/{id}/reject(id=${verification.id})}" method="post" style="display: inline;">
+                        <input type="text" name="notes" placeholder="Rejection notes" class="form-control" style="margin-bottom: 0.5rem;">
+                        <button type="submit" class="btn-secondary">Reject</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

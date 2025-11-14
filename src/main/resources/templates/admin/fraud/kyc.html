@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Verifications - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">Dashboard</a>
+                    <a th:href="@{/admin/fraud/rules}" class="nav-link">Fraud Rules</a>
+                    <a th:href="@{/admin/fraud/activities}" class="nav-link">Suspicious Activities</a>
+                    <a th:href="@{/admin/fraud/kyc}" class="nav-link active">KYC Verifications</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>KYC Verifications</h1>
+                <div class="badge-status" th:if="${pendingVerifications.size() > 0}" 
+                     th:text="${pendingVerifications.size() + ' pending'}"></div>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <div class="card">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Level</th>
+                            <th>Status</th>
+                            <th>Document Type</th>
+                            <th>Document Number</th>
+                            <th>Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="verification : ${pendingVerifications}">
+                            <td th:text="${verification.user.username}"></td>
+                            <td th:text="${verification.verificationLevel}"></td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${'status-' + verification.verificationStatus.name().toLowerCase()}" 
+                                      th:text="${verification.verificationStatus}">
+                                </span>
+                            </td>
+                            <td th:text="${verification.documentType != null ? verification.documentType : 'N/A'}"></td>
+                            <td th:text="${verification.documentNumber != null ? verification.documentNumber : 'N/A'}"></td>
+                            <td th:text="${#temporals.format(verification.createdAt, 'MMM dd, yyyy')}"></td>
+                            <td>
+                                <a th:href="@{/admin/fraud/kyc/{id}(id=${verification.id})}" 
+                                   class="btn-secondary btn-small">Review</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

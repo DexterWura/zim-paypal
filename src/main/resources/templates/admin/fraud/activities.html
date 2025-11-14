@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suspicious Activities - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">Dashboard</a>
+                    <a th:href="@{/admin/fraud/rules}" class="nav-link">Fraud Rules</a>
+                    <a th:href="@{/admin/fraud/activities}" class="nav-link active">Suspicious Activities</a>
+                    <a th:href="@{/admin/fraud/kyc}" class="nav-link">KYC Verifications</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Suspicious Activities</h1>
+                <div class="badge-status" th:if="${pendingCount > 0}" 
+                     th:text="${pendingCount + ' pending'}"></div>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <div class="card">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Type</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                            <th>Description</th>
+                            <th>Detected</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="activity : ${activities.content}">
+                            <td th:text="${activity.user != null ? activity.user.username : 'N/A'}"></td>
+                            <td th:text="${activity.activityType}"></td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${'severity-' + activity.severity.name().toLowerCase()}" 
+                                      th:text="${activity.severity}">
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${'status-' + activity.status.name().toLowerCase()}" 
+                                      th:text="${activity.status}">
+                                </span>
+                            </td>
+                            <td th:text="${#strings.abbreviate(activity.description, 50)}"></td>
+                            <td th:text="${activity.autoDetected ? 'Auto' : 'Manual'}"></td>
+                            <td>
+                                <a th:href="@{/admin/fraud/activities/{id}(id=${activity.id})}" 
+                                   class="btn-secondary btn-small">Review</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination" th:if="${totalPages > 1}">
+                    <a th:href="@{/admin/fraud/activities(page=${currentPage - 1})}" 
+                       th:if="${currentPage > 0}" class="btn-secondary">Previous</a>
+                    <span th:text="${'Page ' + (currentPage + 1) + ' of ' + totalPages}"></span>
+                    <a th:href="@{/admin/fraud/activities(page=${currentPage + 1})}" 
+                       th:if="${currentPage < totalPages - 1}" class="btn-secondary">Next</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

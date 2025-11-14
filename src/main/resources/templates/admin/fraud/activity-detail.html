@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Detail - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/fraud/activities}" class="nav-link">← Back to Activities</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Suspicious Activity Detail</h1>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <div class="card">
+                <div class="form-group">
+                    <label>User</label>
+                    <div th:text="${activity.user != null ? activity.user.username : 'N/A'}"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Activity Type</label>
+                    <div th:text="${activity.activityType}"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Severity</label>
+                    <div>
+                        <span class="status-badge" 
+                              th:classappend="${'severity-' + activity.severity.name().toLowerCase()}" 
+                              th:text="${activity.severity}">
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <div>
+                        <span class="status-badge" 
+                              th:classappend="${'status-' + activity.status.name().toLowerCase()}" 
+                              th:text="${activity.status}">
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <div th:text="${activity.description}"></div>
+                </div>
+
+                <div class="form-group" th:if="${activity.riskFactors != null}">
+                    <label>Risk Factors</label>
+                    <div th:text="${activity.riskFactors}"></div>
+                </div>
+
+                <div class="form-group" th:if="${activity.transaction != null}">
+                    <label>Transaction</label>
+                    <div th:text="${activity.transaction.transactionNumber}"></div>
+                </div>
+
+                <div class="form-group" th:if="${activity.reviewedBy != null}">
+                    <label>Reviewed By</label>
+                    <div th:text="${activity.reviewedBy.username}"></div>
+                </div>
+
+                <div class="form-group" th:if="${activity.reviewNotes != null}">
+                    <label>Review Notes</label>
+                    <div th:text="${activity.reviewNotes}"></div>
+                </div>
+
+                <form th:action="@{/admin/fraud/activities/{id}/review(id=${activity.id})}" method="post" class="form-card">
+                    <div class="form-group">
+                        <label for="status">Review Status</label>
+                        <select id="status" name="status" class="form-control" required>
+                            <option th:each="status : ${statuses}" 
+                                    th:value="${status}" 
+                                    th:text="${status}"
+                                    th:selected="${activity.status == status}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reviewNotes">Review Notes</label>
+                        <textarea id="reviewNotes" name="reviewNotes" class="form-control" rows="4"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block">Submit Review</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+
