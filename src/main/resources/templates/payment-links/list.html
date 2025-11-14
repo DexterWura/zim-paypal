@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Payment Links - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>My Payment Links</h1>
+                <a th:href="@{/payment-links/create}" class="btn-primary">Create Payment Link</a>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${linkCode}" class="alert alert-info">
+                <strong>Share this link:</strong> 
+                <a th:href="@{'/pay/' + ${linkCode}}" th:text="${'https://yourdomain.com/pay/' + linkCode}"></a>
+            </div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <div class="card">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Amount</th>
+                            <th>Type</th>
+                            <th>Uses</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="link : ${links.content}">
+                            <td th:text="${link.title}"></td>
+                            <td th:text="${(link.currency != null ? link.currency.symbol : '$') + #numbers.formatDecimal(link.amount, 1, 2)}"></td>
+                            <td th:text="${link.linkType}"></td>
+                            <td th:text="${link.currentUses + (link.maxUses != null ? ' / ' + link.maxUses : '')}"></td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${'status-' + link.status.name().toLowerCase()}" 
+                                      th:text="${link.status}">
+                                </span>
+                            </td>
+                            <td th:text="${#temporals.format(link.createdAt, 'MMM dd, yyyy')}"></td>
+                            <td>
+                                <a th:href="@{'/pay/' + ${link.linkCode}}" target="_blank" class="btn-secondary btn-small">View</a>
+                                <a th:href="@{'/payment-links/' + ${link.id}}" class="btn-secondary btn-small">Details</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

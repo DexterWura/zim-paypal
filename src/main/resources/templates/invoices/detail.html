@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Detail - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/invoices}" class="nav-link">← Back to Invoices</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Invoice #<span th:text="${invoice.invoiceNumber}"></span></h1>
+                <div>
+                    <span class="status-badge" 
+                          th:classappend="${'status-' + invoice.status.name().toLowerCase()}" 
+                          th:text="${invoice.status}">
+                    </span>
+                </div>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <div class="card">
+                <div class="invoice-header">
+                    <div>
+                        <h3>From</h3>
+                        <p th:text="${invoice.merchant.firstName + ' ' + invoice.merchant.lastName}"></p>
+                        <p th:text="${invoice.merchant.email}"></p>
+                    </div>
+                    <div>
+                        <h3>To</h3>
+                        <p th:text="${invoice.customerName != null ? invoice.customerName : invoice.customerEmail}"></p>
+                        <p th:text="${invoice.customerEmail}"></p>
+                        <p th:if="${invoice.customerAddress != null}" th:text="${invoice.customerAddress}"></p>
+                    </div>
+                </div>
+
+                <div class="invoice-details">
+                    <div><strong>Invoice Date:</strong> <span th:text="${#temporals.format(invoice.invoiceDate, 'MMM dd, yyyy')}"></span></div>
+                    <div th:if="${invoice.dueDate != null}">
+                        <strong>Due Date:</strong> <span th:text="${#temporals.format(invoice.dueDate, 'MMM dd, yyyy')}"></span>
+                    </div>
+                </div>
+
+                <table class="user-table" style="margin-top: 2rem;">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${invoice.items}">
+                            <td th:text="${item.description}"></td>
+                            <td th:text="${item.quantity}"></td>
+                            <td th:text="${(invoice.currency != null ? invoice.currency.symbol : '$') + #numbers.formatDecimal(item.unitPrice, 1, 2)}"></td>
+                            <td th:text="${(invoice.currency != null ? invoice.currency.symbol : '$') + #numbers.formatDecimal(item.price, 1, 2)}"></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" style="text-align: right;"><strong>Subtotal:</strong></td>
+                            <td th:text="${(invoice.currency != null ? invoice.currency.symbol : '$') + #numbers.formatDecimal(invoice.subtotal, 1, 2)}"></td>
+                        </tr>
+                        <tr th:if="${invoice.taxAmount != null && invoice.taxAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                            <td colspan="3" style="text-align: right;"><strong>Tax:</strong></td>
+                            <td th:text="${(invoice.currency != null ? invoice.currency.symbol : '$') + #numbers.formatDecimal(invoice.taxAmount, 1, 2)}"></td>
+                        </tr>
+                        <tr th:if="${invoice.discountAmount != null && invoice.discountAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                            <td colspan="3" style="text-align: right;"><strong>Discount:</strong></td>
+                            <td th:text="${'-' + (invoice.currency != null ? invoice.currency.symbol : '$') + #numbers.formatDecimal(invoice.discountAmount, 1, 2)}"></td>
+                        </tr>
+                        <tr style="font-size: 1.2rem; font-weight: 700;">
+                            <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
+                            <td th:text="${(invoice.currency != null ? invoice.currency.symbol : '$') + #numbers.formatDecimal(invoice.totalAmount, 1, 2)}"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div th:if="${invoice.notes != null}" class="invoice-notes">
+                    <h4>Notes</h4>
+                    <p th:text="${invoice.notes}"></p>
+                </div>
+
+                <div th:if="${invoice.terms != null}" class="invoice-terms">
+                    <h4>Terms & Conditions</h4>
+                    <p th:text="${invoice.terms}"></p>
+                </div>
+
+                <div class="form-actions" style="margin-top: 2rem;">
+                    <form th:if="${invoice.status == T(com.zim.paypal.model.entity.Invoice.InvoiceStatus).DRAFT}" 
+                          th:action="@{'/invoices/' + ${invoice.id} + '/send'}" method="post" style="display: inline;">
+                        <button type="submit" class="btn-primary">Send Invoice</button>
+                    </form>
+                    <form th:if="${invoice.status != T(com.zim.paypal.model.entity.Invoice.InvoiceStatus).PAID && invoice.status != T(com.zim.paypal.model.entity.Invoice.InvoiceStatus).CANCELLED && invoice.customer != null && invoice.customer.id == user.id}" 
+                          th:action="@{'/invoices/' + ${invoice.id} + '/pay'}" method="post" style="display: inline;">
+                        <button type="submit" class="btn-primary">Pay Invoice</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        .invoice-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--gray-medium);
+        }
+
+        .invoice-details {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .invoice-notes, .invoice-terms {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray-medium);
+        }
+    </style>
+</body>
+</html>
+

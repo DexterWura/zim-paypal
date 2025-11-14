@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Invoices - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>My Invoices</h1>
+                <a th:href="@{/invoices/create}" class="btn-primary">Create Invoice</a>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <!-- Sent Invoices -->
+            <div class="card">
+                <h3>Sent Invoices</h3>
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="invoice : ${sentInvoices.content}">
+                            <td th:text="${invoice.invoiceNumber}"></td>
+                            <td th:text="${invoice.customerEmail}"></td>
+                            <td th:text="${(invoice.currency != null ? invoice.currency.symbol : '$') + #numbers.formatDecimal(invoice.totalAmount, 1, 2)}"></td>
+                            <td th:text="${#temporals.format(invoice.invoiceDate, 'MMM dd, yyyy')}"></td>
+                            <td th:text="${invoice.dueDate != null ? #temporals.format(invoice.dueDate, 'MMM dd, yyyy') : 'N/A'}"></td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${'status-' + invoice.status.name().toLowerCase()}" 
+                                      th:text="${invoice.status}">
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{'/invoices/' + ${invoice.id}}" class="btn-secondary btn-small">View</a>
+                                <form th:if="${invoice.status == T(com.zim.paypal.model.entity.Invoice.InvoiceStatus).DRAFT}" 
+                                      th:action="@{'/invoices/' + ${invoice.id} + '/send'}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn-secondary btn-small">Send</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Received Invoices -->
+            <div class="card" style="margin-top: 2rem;">
+                <h3>Received Invoices</h3>
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>From</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="invoice : ${receivedInvoices.content}">
+                            <td th:text="${invoice.invoiceNumber}"></td>
+                            <td th:text="${invoice.merchant.firstName + ' ' + invoice.merchant.lastName}"></td>
+                            <td th:text="${(invoice.currency != null ? invoice.currency.symbol : '$') + #numbers.formatDecimal(invoice.totalAmount, 1, 2)}"></td>
+                            <td th:text="${#temporals.format(invoice.invoiceDate, 'MMM dd, yyyy')}"></td>
+                            <td th:text="${invoice.dueDate != null ? #temporals.format(invoice.dueDate, 'MMM dd, yyyy') : 'N/A'}"></td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${'status-' + invoice.status.name().toLowerCase()}" 
+                                      th:text="${invoice.status}">
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{'/invoices/' + ${invoice.id}}" class="btn-secondary btn-small">View</a>
+                                <form th:if="${invoice.status != T(com.zim.paypal.model.entity.Invoice.InvoiceStatus).PAID && invoice.status != T(com.zim.paypal.model.entity.Invoice.InvoiceStatus).CANCELLED}" 
+                                      th:action="@{'/invoices/' + ${invoice.id} + '/pay'}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn-primary btn-small">Pay Now</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

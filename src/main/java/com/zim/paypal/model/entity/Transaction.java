@@ -29,8 +29,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(exclude = {"sender", "receiver", "account", "card", "moneyRequest"})
-@ToString(exclude = {"sender", "receiver", "account", "card", "moneyRequest"})
+@EqualsAndHashCode(exclude = {"sender", "receiver", "account", "card", "moneyRequest", "invoice"})
+@ToString(exclude = {"sender", "receiver", "account", "card", "moneyRequest", "invoice"})
 public class Transaction {
 
     @Id
@@ -59,6 +59,10 @@ public class Transaction {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "money_request_id")
     private MoneyRequest moneyRequest;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "invoice_id")
+    private Invoice invoice;
 
     @Column(nullable = false, precision = 19, scale = 2)
     @NotNull(message = "Amount is required")

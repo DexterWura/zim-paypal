@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Invoice - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/invoices}" class="nav-link">← Back to Invoices</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Create Invoice</h1>
+            </div>
+
+            <div class="form-container">
+                <form th:action="@{/invoices/create}" th:object="${invoiceDto}" method="post" class="form-card">
+                    <h3>Customer Information</h3>
+                    <div class="form-group">
+                        <label for="customerEmail">Customer Email *</label>
+                        <input type="email" id="customerEmail" th:field="*{customerEmail}" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customerName">Customer Name</label>
+                        <input type="text" id="customerName" th:field="*{customerName}" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customerAddress">Customer Address</label>
+                        <textarea id="customerAddress" th:field="*{customerAddress}" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <h3>Invoice Details</h3>
+                    <div class="form-group">
+                        <label for="invoiceDate">Invoice Date *</label>
+                        <input type="date" id="invoiceDate" th:field="*{invoiceDate}" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dueDate">Due Date</label>
+                        <input type="date" id="dueDate" th:field="*{dueDate}" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="currencyId">Currency</label>
+                        <select id="currencyId" th:field="*{currencyId}" class="form-control">
+                            <option value="">Base Currency</option>
+                            <option th:each="currency : ${currencies}" 
+                                    th:value="${currency.id}" 
+                                    th:text="${currency.currencyCode + ' - ' + currency.currencyName}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <h3>Invoice Items</h3>
+                    <div id="items-container">
+                        <div class="invoice-item-row">
+                            <div class="form-group">
+                                <label>Description</label>
+                                <input type="text" name="items[0].description" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Quantity</label>
+                                <input type="number" name="items[0].quantity" class="form-control" value="1" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Unit Price</label>
+                                <input type="number" name="items[0].unitPrice" class="form-control" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-secondary" onclick="addItemRow()">Add Item</button>
+
+                    <h3>Totals</h3>
+                    <div class="form-group">
+                        <label for="taxAmount">Tax Amount</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="taxAmount" th:field="*{taxAmount}" class="form-control" step="0.01" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="discountAmount">Discount Amount</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="discountAmount" th:field="*{discountAmount}" class="form-control" step="0.01" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="totalAmount">Total Amount *</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="totalAmount" th:field="*{totalAmount}" class="form-control" step="0.01" min="0.01" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" th:field="*{notes}" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="terms">Terms & Conditions</label>
+                        <textarea id="terms" th:field="*{terms}" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large">Create Invoice</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let itemIndex = 1;
+        function addItemRow() {
+            const container = document.getElementById('items-container');
+            const row = document.createElement('div');
+            row.className = 'invoice-item-row';
+            row.innerHTML = `
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" name="items[${itemIndex}].description" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" name="items[${itemIndex}].quantity" class="form-control" value="1" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Unit Price</label>
+                    <input type="number" name="items[${itemIndex}].unitPrice" class="form-control" step="0.01" min="0" required>
+                </div>
+                <button type="button" class="btn-secondary" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            container.appendChild(row);
+            itemIndex++;
+        }
+    </script>
+
+    <style>
+        .invoice-item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px solid var(--gray-medium);
+            border-radius: 4px;
+        }
+    </style>
+</body>
+</html>
+

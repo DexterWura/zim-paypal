@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invalid Payment Link</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="card" style="max-width: 600px; margin: 2rem auto; text-align: center;">
+                <div class="error-icon" style="font-size: 4rem; color: #dc3545; margin-bottom: 1rem;">✗</div>
+                <h2>Invalid Payment Link</h2>
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+                <p>The payment link you're trying to access is no longer valid or has expired.</p>
+                <div style="margin-top: 2rem;">
+                    <a th:href="@{/}" class="btn-primary">Return to Home</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

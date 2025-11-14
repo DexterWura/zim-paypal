@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Payment Link - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/payment-links}" class="nav-link">← Back to Links</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Create Payment Link</h1>
+            </div>
+
+            <div class="form-container">
+                <form th:action="@{/payment-links/create}" th:object="${linkDto}" method="post" class="form-card">
+                    <div class="form-group">
+                        <label for="title">Title</label>
+                        <input type="text" id="title" th:field="*{title}" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" th:field="*{description}" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">Amount</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="amount" th:field="*{amount}" class="form-control" 
+                                   step="0.01" min="0.01" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="currencyId">Currency</label>
+                        <select id="currencyId" th:field="*{currencyId}" class="form-control">
+                            <option value="">Base Currency</option>
+                            <option th:each="currency : ${currencies}" 
+                                    th:value="${currency.id}" 
+                                    th:text="${currency.currencyCode + ' - ' + currency.currencyName}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="linkType">Link Type</label>
+                        <select id="linkType" th:field="*{linkType}" class="form-control" required>
+                            <option th:each="type : ${linkTypes}" th:value="${type}" th:text="${type}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxUses">Max Uses (Optional)</label>
+                        <input type="number" id="maxUses" th:field="*{maxUses}" class="form-control" min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" th:field="*{allowPartialPayment}"> Allow Partial Payment
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" th:field="*{emailNotification}"> Email Notification
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large">Create Payment Link</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+
