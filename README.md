@@ -12,6 +12,7 @@ A full-featured PayPal clone built with Spring Boot, featuring secure payment pr
 - ✅ **Card Management** - Link and manage payment cards
 - ✅ **Transaction History** - Complete transaction tracking and statements
 - ✅ **Payment Links** - Create shareable payment links for easy payments (public payment pages)
+- ✅ **QR Code Payments** - Generate and download QR codes for payment links, scan-to-pay functionality
 - ✅ **Invoicing System** - Create, send, and track invoices with line items, tax, and discounts
 - ✅ **Recurring Payments & Subscriptions** - Auto-pay subscriptions with multiple billing cycles
 
@@ -69,7 +70,7 @@ A full-featured PayPal clone built with Spring Boot, featuring secure payment pr
 ### High Priority (Next Features)
 1. **Payment Gateway Integration** - Real payment processing with Stripe/PayPal APIs
 2. ✅ **Recurring Payments/Subscriptions** - Auto-pay and subscription management (COMPLETED)
-3. **QR Code Payments** - Generate QR codes for payment links
+3. ✅ **QR Code Payments** - Generate QR codes for payment links (COMPLETED)
 4. **Mobile App API** - RESTful API endpoints for mobile applications
 5. **Webhooks** - Event webhooks for third-party integrations
 6. **Payment Disputes** - Dispute management and resolution workflow
