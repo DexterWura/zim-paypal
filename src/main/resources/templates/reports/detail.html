@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Details - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/reports}" class="nav-link">← Back to Reports</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Report Details</h1>
+            </div>
+
+            <div class="card">
+                <div class="form-group">
+                    <label>Report Type</label>
+                    <div th:text="${report.reportType}"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Format</label>
+                    <div th:text="${report.format}"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <div>
+                        <span class="status-badge" 
+                              th:classappend="${'status-' + report.status.name().toLowerCase()}" 
+                              th:text="${report.status}">
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group" th:if="${report.startDate != null or report.endDate != null}">
+                    <label>Period</label>
+                    <div>
+                        <span th:if="${report.startDate != null}" th:text="${#temporals.format(report.startDate, 'MMM dd, yyyy')}"></span>
+                        <span th:if="${report.startDate != null and report.endDate != null}"> - </span>
+                        <span th:if="${report.endDate != null}" th:text="${#temporals.format(report.endDate, 'MMM dd, yyyy')}"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Created At</label>
+                    <div th:text="${#temporals.format(report.createdAt, 'MMM dd, yyyy HH:mm')}"></div>
+                </div>
+
+                <div class="form-group" th:if="${report.completedAt != null}">
+                    <label>Completed At</label>
+                    <div th:text="${#temporals.format(report.completedAt, 'MMM dd, yyyy HH:mm')}"></div>
+                </div>
+
+                <div class="form-group" th:if="${report.fileName != null}">
+                    <label>File Name</label>
+                    <div th:text="${report.fileName}"></div>
+                </div>
+
+                <div class="form-group" th:if="${report.fileSize != null}">
+                    <label>File Size</label>
+                    <div th:text="${#numbers.formatDecimal(report.fileSize / 1024.0, 1, 2) + ' KB'}"></div>
+                </div>
+
+                <div class="form-group" th:if="${report.errorMessage != null}">
+                    <label>Error Message</label>
+                    <div class="alert alert-error" th:text="${report.errorMessage}"></div>
+                </div>
+
+                <div class="form-actions" style="margin-top: 2rem;">
+                    <a th:if="${report.status == T(com.zim.paypal.model.entity.Report.ReportStatus).COMPLETED}"
+                       th:href="@{'/reports/' + ${report.id} + '/download'}" 
+                       class="btn-primary">Download Report</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+
