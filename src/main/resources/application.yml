@@ -1,17 +1,11 @@
 spring:
   application:
     name: zim-paypal
-
-app:
-  base-url: http://localhost:80
-
-spring:
   cache:
     type: simple
     cache-names:
       - featureFlags
       - countryRestrictions
-  
   datasource:
     url: jdbc:h2:mem:zimdb
     driver-class-name: org.h2.Driver
