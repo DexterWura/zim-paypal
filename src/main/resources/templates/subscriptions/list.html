@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Subscriptions - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>My Subscriptions</h1>
+                <a th:href="@{/subscriptions/create}" class="btn-primary">Create Subscription</a>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <div class="card">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Subscription ID</th>
+                            <th>Merchant</th>
+                            <th>Amount</th>
+                            <th>Cycle</th>
+                            <th>Next Payment</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="subscription : ${subscriptions}">
+                            <td th:text="${subscription.subscriptionId}"></td>
+                            <td th:text="${subscription.merchant.firstName + ' ' + subscription.merchant.lastName}"></td>
+                            <td th:text="${(subscription.account.currency != null ? subscription.account.currency.symbol : '$') + #numbers.formatDecimal(subscription.amount, 1, 2)}"></td>
+                            <td th:text="${subscription.billingCycle}"></td>
+                            <td th:text="${#temporals.format(subscription.nextPaymentDate, 'MMM dd, yyyy')}"></td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${'status-' + subscription.status.name().toLowerCase()}" 
+                                      th:text="${subscription.status}">
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{'/subscriptions/' + ${subscription.subscriptionId}}" class="btn-secondary btn-small">View</a>
+                                <form th:if="${subscription.status == T(com.zim.paypal.model.entity.RecurringPayment.Status).ACTIVE}" 
+                                      th:action="@{'/subscriptions/' + ${subscription.subscriptionId} + '/pause'}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn-secondary btn-small">Pause</button>
+                                </form>
+                                <form th:if="${subscription.status == T(com.zim.paypal.model.entity.RecurringPayment.Status).PAUSED}" 
+                                      th:action="@{'/subscriptions/' + ${subscription.subscriptionId} + '/resume'}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn-secondary btn-small">Resume</button>
+                                </form>
+                                <form th:action="@{'/subscriptions/' + ${subscription.subscriptionId} + '/cancel'}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn-secondary btn-small" 
+                                            onclick="return confirm('Are you sure you want to cancel this subscription?')">Cancel</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

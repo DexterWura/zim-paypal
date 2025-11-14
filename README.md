@@ -11,8 +11,9 @@ A full-featured PayPal clone built with Spring Boot, featuring secure payment pr
 - ✅ **Deposits & Withdrawals** - Fund accounts and withdraw funds
 - ✅ **Card Management** - Link and manage payment cards
 - ✅ **Transaction History** - Complete transaction tracking and statements
-- ✅ **Payment Links** - Create shareable payment links for easy payments
-- ✅ **Invoicing System** - Create, send, and track invoices with line items
+- ✅ **Payment Links** - Create shareable payment links for easy payments (public payment pages)
+- ✅ **Invoicing System** - Create, send, and track invoices with line items, tax, and discounts
+- ✅ **Recurring Payments & Subscriptions** - Auto-pay subscriptions with multiple billing cycles
 
 ### Security & Compliance
 - ✅ **Two-Factor Authentication (2FA)** - SMS, Email, and TOTP/App-based 2FA with backup codes
@@ -67,7 +68,7 @@ A full-featured PayPal clone built with Spring Boot, featuring secure payment pr
 
 ### High Priority (Next Features)
 1. **Payment Gateway Integration** - Real payment processing with Stripe/PayPal APIs
-2. **Recurring Payments/Subscriptions** - Auto-pay and subscription management
+2. ✅ **Recurring Payments/Subscriptions** - Auto-pay and subscription management (COMPLETED)
 3. **QR Code Payments** - Generate QR codes for payment links
 4. **Mobile App API** - RESTful API endpoints for mobile applications
 5. **Webhooks** - Event webhooks for third-party integrations
@@ -105,6 +106,8 @@ The application uses Flyway for database migrations. Key tables include:
 - `payment_links` - Shareable payment links
 - `invoices` - Invoice management
 - `invoice_items` - Invoice line items
+- `subscription_plans` - Subscription plan templates
+- `recurring_payments` - Active subscriptions and recurring payments
 - `two_factor_auth` - 2FA settings
 - `risk_scores` - Risk assessments
 - `suspicious_activities` - Flagged activities

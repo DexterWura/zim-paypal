@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Subscription - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/subscriptions}" class="nav-link">← Back to Subscriptions</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Create Subscription</h1>
+            </div>
+
+            <div class="form-container">
+                <form th:action="@{/subscriptions/create}" th:object="${subscriptionDto}" method="post" class="form-card">
+                    <div class="form-group">
+                        <label for="planId">Select Plan (Optional)</label>
+                        <select id="planId" th:field="*{planId}" class="form-control" onchange="loadPlanDetails()">
+                            <option value="">Create Custom Subscription</option>
+                            <option th:each="plan : ${plans}" 
+                                    th:value="${plan.id}" 
+                                    th:text="${plan.planName + ' - ' + plan.amount + ' ' + plan.currencyCode + ' / ' + plan.billingCycle}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="merchantId">Merchant Email</label>
+                        <input type="email" id="merchantEmail" class="form-control" 
+                               placeholder="merchant@example.com" required>
+                        <small class="form-text">Enter the email of the merchant you're subscribing to</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">Amount *</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="amount" th:field="*{amount}" class="form-control" 
+                                   step="0.01" min="0.01" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="billingCycle">Billing Cycle *</label>
+                        <select id="billingCycle" th:field="*{billingCycle}" class="form-control" required>
+                            <option value="">Select Cycle</option>
+                            <option th:each="cycle : ${billingCycles}" th:value="${cycle}" th:text="${cycle}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="accountId">Payment Account *</label>
+                        <select id="accountId" th:field="*{accountId}" class="form-control" required>
+                            <option value="">Select Account</option>
+                            <option th:each="account : ${accounts}" 
+                                    th:value="${account.id}" 
+                                    th:text="${account.accountNumber + ' (' + (account.currency != null ? account.currency.currencyCode : account.currencyCode) + ')'}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="trialPeriodDays">Trial Period (Days)</label>
+                        <input type="number" id="trialPeriodDays" th:field="*{trialPeriodDays}" class="form-control" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" th:field="*{autoRenew}" checked> Auto Renew
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" th:field="*{description}" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large">Create Subscription</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function loadPlanDetails() {
+            const planSelect = document.getElementById('planId');
+            const planId = planSelect.value;
+            if (planId) {
+                // In a real implementation, fetch plan details via AJAX
+                // For now, user can manually fill in details
+            }
+        }
+
+        // Handle merchant email lookup
+        document.getElementById('merchantEmail').addEventListener('blur', function() {
+            const email = this.value;
+            if (email) {
+                // In a real implementation, fetch merchant ID via AJAX
+                // For now, we'll need to handle this in the controller
+            }
+        });
+    </script>
+</body>
+</html>
+
