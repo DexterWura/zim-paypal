@@ -3,7 +3,15 @@ spring:
     name: zim-paypal
 
 app:
-  base-url: http://localhost:8080
+  base-url: http://localhost:80
+
+# Cache Configuration
+spring:
+  cache:
+    type: simple
+    cache-names:
+      - featureFlags
+      - countryRestrictions
   
   datasource:
     url: jdbc:h2:mem:zimdb

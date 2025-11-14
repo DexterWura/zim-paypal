@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${countryRestriction.id != null ? 'Edit Country' : 'Add Country'}">Country Form - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/countries}" class="nav-link">← Back to Countries</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1 th:text="${countryRestriction.id != null ? 'Edit Country' : 'Add Country'}"></h1>
+            </div>
+
+            <div class="form-container">
+                <form th:action="${countryRestriction.id != null ? '/admin/countries/' + countryRestriction.id + '/edit' : '/admin/countries/create'}" 
+                      th:object="${countryRestriction}" method="post" class="form-card">
+                    <div class="form-group">
+                        <label for="countryCode">Country Code (ISO 3166-1 alpha-2) *</label>
+                        <input type="text" id="countryCode" th:field="*{countryCode}" 
+                               class="form-control" maxlength="2" required
+                               th:readonly="${countryRestriction.id != null}">
+                        <small class="form-text">e.g., US, ZW, GB (2 letters)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="countryName">Country Name *</label>
+                        <input type="text" id="countryName" th:field="*{countryName}" 
+                               class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" th:field="*{isEnabled}"> Enabled
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" th:field="*{isRegistrationAllowed}"> Allow Registration
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" th:field="*{isTransactionAllowed}"> Allow Transactions
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" th:field="*{isMerchantAllowed}"> Allow Merchant Features
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" th:field="*{notes}" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large">
+                        <span th:text="${countryRestriction.id != null ? 'Update Country' : 'Add Country'}"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

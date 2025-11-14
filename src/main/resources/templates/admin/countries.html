@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Country Restrictions - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">Admin Dashboard</a>
+                    <a th:href="@{/admin/features}" class="nav-link">Features</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Country Restrictions Management</h1>
+                <a th:href="@{/admin/countries/create}" class="btn-primary">Add Country</a>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <div class="card">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Country Code</th>
+                            <th>Country Name</th>
+                            <th>Status</th>
+                            <th>Registration</th>
+                            <th>Transactions</th>
+                            <th>Merchant</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="country : ${countries}">
+                            <td><code th:text="${country.countryCode}"></code></td>
+                            <td th:text="${country.countryName}"></td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${country.isEnabled ? 'status-active' : 'status-inactive'}" 
+                                      th:text="${country.isEnabled ? 'Enabled' : 'Disabled'}">
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${country.isRegistrationAllowed ? 'status-active' : 'status-inactive'}" 
+                                      th:text="${country.isRegistrationAllowed ? 'Allowed' : 'Blocked'}">
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${country.isTransactionAllowed ? 'status-active' : 'status-inactive'}" 
+                                      th:text="${country.isTransactionAllowed ? 'Allowed' : 'Blocked'}">
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${country.isMerchantAllowed ? 'status-active' : 'status-inactive'}" 
+                                      th:text="${country.isMerchantAllowed ? 'Allowed' : 'Blocked'}">
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{'/admin/countries/' + ${country.id} + '/edit'}" 
+                                   class="btn-secondary btn-small">Edit</a>
+                                <form th:action="@{'/admin/countries/' + ${country.countryCode} + '/toggle'}" 
+                                      method="post" style="display: inline;">
+                                    <input type="hidden" name="enabled" th:value="${!country.isEnabled}">
+                                    <button type="submit" 
+                                            class="btn-primary btn-small"
+                                            th:text="${country.isEnabled ? 'Disable' : 'Enable'}">
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

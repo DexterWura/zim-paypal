@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Flags - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">Admin Dashboard</a>
+                    <a th:href="@{/admin/countries}" class="nav-link">Countries</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Feature Flags Management</h1>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <div th:each="category : ${categories}">
+                <div class="card" style="margin-bottom: 2rem;">
+                    <h3 th:text="${category}"></h3>
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="flag : ${flagsByCategory[__${category}__]}">
+                                <td>
+                                    <strong th:text="${flag.displayName}"></strong><br>
+                                    <small style="color: var(--gray-dark);" th:text="${flag.featureName}"></small>
+                                </td>
+                                <td th:text="${flag.description}"></td>
+                                <td>
+                                    <span class="status-badge" 
+                                          th:classappend="${flag.isEnabled ? 'status-active' : 'status-inactive'}" 
+                                          th:text="${flag.isEnabled ? 'Enabled' : 'Disabled'}">
+                                    </span>
+                                    <span th:if="${flag.requiresRestart}" 
+                                          class="badge" 
+                                          style="background-color: #ffc107; color: #000; margin-left: 0.5rem;">
+                                        Requires Restart
+                                    </span>
+                                </td>
+                                <td>
+                                    <form th:action="@{'/admin/features/' + ${flag.featureName} + '/toggle'}" 
+                                          method="post" style="display: inline;">
+                                        <input type="hidden" name="enabled" th:value="${!flag.isEnabled}">
+                                        <button type="submit" 
+                                                class="btn-primary btn-small"
+                                                th:text="${flag.isEnabled ? 'Disable' : 'Enable'}">
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+
