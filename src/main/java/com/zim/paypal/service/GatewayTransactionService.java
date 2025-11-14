@@ -102,24 +102,30 @@ public class GatewayTransactionService {
             );
 
             // Use reflection to get response data
-            Method success = response.getClass().getMethod("success");
-            Boolean isSuccess = (Boolean) success.invoke(response);
+            try {
+                Method success = response.getClass().getMethod("success");
+                Boolean isSuccess = (Boolean) success.invoke(response);
 
-            if (isSuccess) {
-                Method pollUrl = response.getClass().getMethod("pollUrl");
-                String pollUrlStr = (String) pollUrl.invoke(response);
-                Method redirectURL = response.getClass().getMethod("redirectURL");
-                String redirectUrlStr = (String) redirectURL.invoke(response);
+                if (isSuccess) {
+                    Method pollUrl = response.getClass().getMethod("pollUrl");
+                    String pollUrlStr = (String) pollUrl.invoke(response);
+                    Method redirectURL = response.getClass().getMethod("redirectURL");
+                    String redirectUrlStr = (String) redirectURL.invoke(response);
 
-                gatewayTransaction.setGatewayTransactionId(pollUrlStr);
-                gatewayTransaction.setGatewayResponse("Redirect URL: " + redirectUrlStr);
-                gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.PROCESSING);
-                log.info("Paynow web payment initiated. Redirect URL: {}", redirectUrlStr);
-            } else {
-                Method errors = response.getClass().getMethod("errors");
-                String errorStr = (String) errors.invoke(response);
+                    gatewayTransaction.setGatewayTransactionId(pollUrlStr);
+                    gatewayTransaction.setGatewayResponse("Redirect URL: " + redirectUrlStr);
+                    gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.PROCESSING);
+                    log.info("Paynow web payment initiated. Redirect URL: {}", redirectUrlStr);
+                } else {
+                    Method errors = response.getClass().getMethod("errors");
+                    String errorStr = (String) errors.invoke(response);
+                    gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.FAILED);
+                    gatewayTransaction.setGatewayResponse("Paynow error: " + errorStr);
+                }
+            } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
+                log.error("Error accessing Paynow response methods: {}", e.getMessage(), e);
                 gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.FAILED);
-                gatewayTransaction.setGatewayResponse("Paynow error: " + errorStr);
+                gatewayTransaction.setGatewayResponse("Error processing response: " + e.getMessage());
             }
             gatewayTransactionRepository.save(gatewayTransaction);
         } catch (Exception e) {
@@ -143,24 +149,30 @@ public class GatewayTransactionService {
             );
 
             // Use reflection to get response data
-            Method success = response.getClass().getMethod("success");
-            Boolean isSuccess = (Boolean) success.invoke(response);
+            try {
+                Method success = response.getClass().getMethod("success");
+                Boolean isSuccess = (Boolean) success.invoke(response);
 
-            if (isSuccess) {
-                Method pollUrl = response.getClass().getMethod("pollUrl");
-                String pollUrlStr = (String) pollUrl.invoke(response);
-                Method instructions = response.getClass().getMethod("instructions");
-                String instructionsStr = (String) instructions.invoke(response);
+                if (isSuccess) {
+                    Method pollUrl = response.getClass().getMethod("pollUrl");
+                    String pollUrlStr = (String) pollUrl.invoke(response);
+                    Method instructions = response.getClass().getMethod("instructions");
+                    String instructionsStr = (String) instructions.invoke(response);
 
-                gatewayTransaction.setGatewayTransactionId(pollUrlStr);
-                gatewayTransaction.setGatewayResponse("Instructions: " + instructionsStr);
-                gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.PROCESSING);
-                log.info("Paynow mobile payment initiated. Poll URL: {}", pollUrlStr);
-            } else {
-                Method errors = response.getClass().getMethod("errors");
-                String errorStr = (String) errors.invoke(response);
+                    gatewayTransaction.setGatewayTransactionId(pollUrlStr);
+                    gatewayTransaction.setGatewayResponse("Instructions: " + instructionsStr);
+                    gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.PROCESSING);
+                    log.info("Paynow mobile payment initiated. Poll URL: {}", pollUrlStr);
+                } else {
+                    Method errors = response.getClass().getMethod("errors");
+                    String errorStr = (String) errors.invoke(response);
+                    gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.FAILED);
+                    gatewayTransaction.setGatewayResponse("Paynow error: " + errorStr);
+                }
+            } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
+                log.error("Error accessing Paynow response methods: {}", e.getMessage(), e);
                 gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.FAILED);
-                gatewayTransaction.setGatewayResponse("Paynow error: " + errorStr);
+                gatewayTransaction.setGatewayResponse("Error processing response: " + e.getMessage());
             }
             gatewayTransactionRepository.save(gatewayTransaction);
         } catch (Exception e) {
@@ -236,22 +248,26 @@ public class GatewayTransactionService {
                 Object status = paynowIntegrationService.pollTransactionStatus(gateway, pollUrl);
 
                 // Use reflection to check if paid
-                Method isPaid = status.getClass().getMethod("isPaid");
-                Boolean paid = (Boolean) isPaid.invoke(status);
+                try {
+                    Method isPaid = status.getClass().getMethod("isPaid");
+                    Boolean paid = (Boolean) isPaid.invoke(status);
 
-                if (paid) {
-                    if (gatewayTransaction.getTransaction() == null) {
-                        Transaction depositTransaction = transactionService.createDeposit(
-                                gatewayTransaction.getUser().getId(),
-                                gatewayTransaction.getAmount(),
-                                "Deposit via " + gateway.getDisplayName()
-                        );
-                        gatewayTransaction.setTransaction(depositTransaction);
+                    if (paid) {
+                        if (gatewayTransaction.getTransaction() == null) {
+                            Transaction depositTransaction = transactionService.createDeposit(
+                                    gatewayTransaction.getUser().getId(),
+                                    gatewayTransaction.getAmount(),
+                                    "Deposit via " + gateway.getDisplayName()
+                            );
+                            gatewayTransaction.setTransaction(depositTransaction);
+                        }
+                        gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.COMPLETED);
+                        log.info("Transaction {} confirmed as paid", gatewayTransaction.getId());
+                    } else {
+                        gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.PENDING);
                     }
-                    gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.COMPLETED);
-                    log.info("Transaction {} confirmed as paid", gatewayTransaction.getId());
-                } else {
-                    gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.PENDING);
+                } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
+                    log.error("Error accessing Paynow status methods: {}", e.getMessage(), e);
                 }
                 gatewayTransactionRepository.save(gatewayTransaction);
             }
