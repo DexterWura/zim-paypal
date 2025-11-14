@@ -1,8 +1,11 @@
 package com.zim.paypal.service;
 
 import com.zim.paypal.model.entity.Account;
+import com.zim.paypal.model.entity.Currency;
 import com.zim.paypal.model.entity.User;
 import com.zim.paypal.repository.AccountRepository;
+import com.zim.paypal.service.CurrencyService;
+import com.zim.paypal.service.AccountLimitService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,8 @@ import java.util.UUID;
 public class AccountService {
 
     private final AccountRepository accountRepository;
+    private final CurrencyService currencyService;
+    private final AccountLimitService accountLimitService;
 
     /**
      * Create default account for user
@@ -34,19 +39,67 @@ public class AccountService {
     public Account createDefaultAccount(User user) {
         log.info("Creating default account for user: {}", user.getUsername());
         
+        // Get base currency
+        Currency baseCurrency = currencyService.getBaseCurrency();
+        
         String accountNumber = generateAccountNumber();
         
         Account account = Account.builder()
                 .accountNumber(accountNumber)
                 .user(user)
                 .balance(BigDecimal.ZERO)
-                .currencyCode("USD")
+                .currency(baseCurrency)
+                .currencyCode(baseCurrency.getCurrencyCode())
                 .accountType(Account.AccountType.PERSONAL)
                 .status(Account.AccountStatus.ACTIVE)
                 .build();
         
         Account savedAccount = accountRepository.save(account);
         log.info("Account created: {}", savedAccount.getAccountNumber());
+        return savedAccount;
+    }
+
+    /**
+     * Create account in specific currency for user
+     * 
+     * @param user User entity
+     * @param currencyId Currency ID
+     * @return Created account
+     */
+    public Account createAccount(User user, Long currencyId) {
+        // Check account limit
+        if (!accountLimitService.canCreateAccount(user.getId(), user.getRole())) {
+            throw new IllegalStateException("Account limit reached. Cannot create more accounts.");
+        }
+
+        Currency currency = currencyService.getCurrencyById(currencyId);
+        if (!currency.getIsActive()) {
+            throw new IllegalStateException("Currency is not active");
+        }
+
+        // Check if user already has account in this currency
+        List<Account> existingAccounts = accountRepository.findByUser(user);
+        boolean hasCurrencyAccount = existingAccounts.stream()
+                .anyMatch(a -> a.getCurrency() != null && a.getCurrency().getId().equals(currencyId));
+        
+        if (hasCurrencyAccount) {
+            throw new IllegalStateException("User already has an account in this currency");
+        }
+
+        String accountNumber = generateAccountNumber();
+        
+        Account account = Account.builder()
+                .accountNumber(accountNumber)
+                .user(user)
+                .balance(BigDecimal.ZERO)
+                .currency(currency)
+                .currencyCode(currency.getCurrencyCode())
+                .accountType(Account.AccountType.PERSONAL)
+                .status(Account.AccountStatus.ACTIVE)
+                .build();
+        
+        Account savedAccount = accountRepository.save(account);
+        log.info("Account created in {} for user: {}", currency.getCurrencyCode(), user.getUsername());
         return savedAccount;
     }
 

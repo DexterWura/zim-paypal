@@ -96,5 +96,19 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Transaction> findByAccountAndDateRange(@Param("account") Account account,
                                                  @Param("startDate") LocalDateTime startDate,
                                                  @Param("endDate") LocalDateTime endDate);
+
+    /**
+     * Find transactions by sender user ID and date range (for limit checking)
+     * 
+     * @param userId User ID
+     * @param startDate Start date
+     * @param endDate End date
+     * @return List of transactions
+     */
+    @Query("SELECT t FROM Transaction t WHERE t.sender.id = :userId " +
+           "AND t.createdAt BETWEEN :startDate AND :endDate ORDER BY t.createdAt DESC")
+    List<Transaction> findBySenderIdAndCreatedAtBetween(@Param("userId") Long userId,
+                                                        @Param("startDate") LocalDateTime startDate,
+                                                        @Param("endDate") LocalDateTime endDate);
 }
 

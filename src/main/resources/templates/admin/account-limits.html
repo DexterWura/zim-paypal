@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Account Limits - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">Dashboard</a>
+                    <a th:href="@{/admin/users}" class="nav-link">Users</a>
+                    <a th:href="@{/admin/currencies}" class="nav-link">Currencies</a>
+                    <a th:href="@{/admin/exchange-rates}" class="nav-link">Exchange Rates</a>
+                    <a th:href="@{/admin/account-limits}" class="nav-link active">Account Limits</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Manage Account Limits</h1>
+                <a th:href="@{/admin/account-limits/new}" class="btn-primary">Create New Limit</a>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <div class="card">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>User Role</th>
+                            <th>Max Accounts</th>
+                            <th>Max Transaction</th>
+                            <th>Daily Limit</th>
+                            <th>Weekly Limit</th>
+                            <th>Monthly Limit</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="limit : ${limits}">
+                            <td th:text="${limit.limitCode}"></td>
+                            <td th:text="${limit.limitName}"></td>
+                            <td th:text="${limit.limitType}"></td>
+                            <td th:text="${limit.userRole != null ? limit.userRole : 'All'}"></td>
+                            <td th:text="${limit.maxAccountsPerUser != null ? limit.maxAccountsPerUser : 'N/A'}"></td>
+                            <td th:text="${limit.maxTransactionAmount != null ? '$' + #numbers.formatDecimal(limit.maxTransactionAmount, 1, 2) : 'N/A'}"></td>
+                            <td th:text="${limit.maxDailyAmount != null ? '$' + #numbers.formatDecimal(limit.maxDailyAmount, 1, 2) : 'N/A'}"></td>
+                            <td th:text="${limit.maxWeeklyAmount != null ? '$' + #numbers.formatDecimal(limit.maxWeeklyAmount, 1, 2) : 'N/A'}"></td>
+                            <td th:text="${limit.maxMonthlyAmount != null ? '$' + #numbers.formatDecimal(limit.maxMonthlyAmount, 1, 2) : 'N/A'}"></td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${limit.isActive ? 'status-completed' : 'status-cancelled'}" 
+                                      th:text="${limit.isActive ? 'Active' : 'Inactive'}">
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/account-limits/{id}/edit(id=${limit.id})}" class="btn-secondary btn-small">Edit</a>
+                                <form th:action="@{/admin/account-limits/{id}/delete(id=${limit.id})}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn-secondary btn-small" 
+                                            onclick="return confirm('Are you sure you want to delete this limit?')">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

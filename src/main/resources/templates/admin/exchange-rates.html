@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Exchange Rates - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">Dashboard</a>
+                    <a th:href="@{/admin/currencies}" class="nav-link">Currencies</a>
+                    <a th:href="@{/admin/exchange-rates}" class="nav-link active">Exchange Rates</a>
+                    <a th:href="@{/admin/account-limits}" class="nav-link">Account Limits</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Manage Exchange Rates</h1>
+                <a th:href="@{/admin/exchange-rates/new}" class="btn-primary">Add New Rate</a>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <div class="card">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Rate</th>
+                            <th>Effective From</th>
+                            <th>Effective To</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="rate : ${rates}">
+                            <td th:text="${rate.fromCurrency.currencyCode}"></td>
+                            <td th:text="${rate.toCurrency.currencyCode}"></td>
+                            <td th:text="${#numbers.formatDecimal(rate.rate, 1, 6)}"></td>
+                            <td th:text="${#temporals.format(rate.effectiveFrom, 'MMM dd, yyyy')}"></td>
+                            <td th:text="${rate.effectiveTo != null ? #temporals.format(rate.effectiveTo, 'MMM dd, yyyy') : 'No expiry'}"></td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${rate.isActive && rate.effective ? 'status-completed' : 'status-cancelled'}" 
+                                      th:text="${rate.isActive && rate.effective ? 'Active' : 'Inactive'}">
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/exchange-rates/{id}/edit(id=${rate.id})}" class="btn-secondary btn-small">Edit</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

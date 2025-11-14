@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${limitId != null ? 'Edit Account Limit' : 'Create Account Limit'}">Create Account Limit - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/account-limits}" class="nav-link active">Account Limits</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1 th:text="${limitId != null ? 'Edit Account Limit' : 'Create New Account Limit'}">Create Account Limit</h1>
+                <a th:href="@{/admin/account-limits}" class="btn-secondary">← Back to Account Limits</a>
+            </div>
+
+            <div class="form-container">
+                <form th:action="${limitId != null ? '/admin/account-limits/' + limitId + '/edit' : '/admin/account-limits/new'}" 
+                      th:object="${limitDto}" method="post" class="form-card">
+                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-error">
+                        <ul>
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="limitName">Limit Name</label>
+                        <input type="text" id="limitName" th:field="*{limitName}" class="form-control" required>
+                        <span th:if="${#fields.hasErrors('limitName')}" th:errors="*{limitName}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="limitCode">Limit Code</label>
+                        <input type="text" id="limitCode" th:field="*{limitCode}" class="form-control" required 
+                               placeholder="e.g., USER_ACCOUNT_LIMIT">
+                        <span th:if="${#fields.hasErrors('limitCode')}" th:errors="*{limitCode}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="limitType">Limit Type</label>
+                        <select id="limitType" th:field="*{limitType}" class="form-control" required>
+                            <option value="">Select Type</option>
+                            <option th:each="type : ${limitTypes}" th:value="${type}" th:text="${type}"></option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('limitType')}" th:errors="*{limitType}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userRole">User Role (Optional - leave blank for all roles)</label>
+                        <select id="userRole" th:field="*{userRole}" class="form-control">
+                            <option value="">All Roles</option>
+                            <option th:each="role : ${userRoles}" th:value="${role}" th:text="${role}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxAccountsPerUser">Max Accounts Per User</label>
+                        <input type="number" id="maxAccountsPerUser" th:field="*{maxAccountsPerUser}" class="form-control" 
+                               min="1" placeholder="e.g., 5">
+                        <small class="form-text">Maximum number of accounts a user can have</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxTransactionAmount">Max Transaction Amount</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="maxTransactionAmount" th:field="*{maxTransactionAmount}" class="form-control" 
+                                   step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        <small class="form-text">Maximum amount per single transaction</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxDailyAmount">Max Daily Amount</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="maxDailyAmount" th:field="*{maxDailyAmount}" class="form-control" 
+                                   step="0.01" min="0" placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxWeeklyAmount">Max Weekly Amount</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="maxWeeklyAmount" th:field="*{maxWeeklyAmount}" class="form-control" 
+                                   step="0.01" min="0" placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxMonthlyAmount">Max Monthly Amount</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="maxMonthlyAmount" th:field="*{maxMonthlyAmount}" class="form-control" 
+                                   step="0.01" min="0" placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxDailyCount">Max Daily Transaction Count</label>
+                        <input type="number" id="maxDailyCount" th:field="*{maxDailyCount}" class="form-control" 
+                               min="0" placeholder="e.g., 100">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxWeeklyCount">Max Weekly Transaction Count</label>
+                        <input type="number" id="maxWeeklyCount" th:field="*{maxWeeklyCount}" class="form-control" 
+                               min="0" placeholder="e.g., 500">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxMonthlyCount">Max Monthly Transaction Count</label>
+                        <input type="number" id="maxMonthlyCount" th:field="*{maxMonthlyCount}" class="form-control" 
+                               min="0" placeholder="e.g., 2000">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" th:field="*{isActive}"> Active
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" th:field="*{description}" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large" 
+                            th:text="${limitId != null ? 'Update Account Limit' : 'Create Account Limit'}">Create Account Limit</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

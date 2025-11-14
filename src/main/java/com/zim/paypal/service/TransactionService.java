@@ -30,6 +30,7 @@ public class TransactionService {
     private final CardService cardService;
     private final NotificationService notificationService;
     private final RewardsService rewardsService;
+    private final AccountLimitService accountLimitService;
     private static final BigDecimal TRANSFER_FEE_RATE = new BigDecimal("0.029"); // 2.9%
     private static final BigDecimal MIN_TRANSFER_FEE = new BigDecimal("0.30");
     private static final BigDecimal MAX_TRANSFER_FEE = new BigDecimal("2.99");
@@ -62,7 +63,7 @@ public class TransactionService {
         Transaction savedTransaction = transactionRepository.save(transaction);
         
         // Process deposit
-        accountService.deposit(accountId, amount);
+        accountService.deposit(account.getId(), amount);
         savedTransaction.markAsCompleted();
         transactionRepository.save(savedTransaction);
         
@@ -95,6 +96,11 @@ public class TransactionService {
         
         Account senderAccount = accountService.findActiveAccountByUser(sender);
         Account receiverAccount = accountService.findActiveAccountByUser(receiver);
+        
+        // Check transaction limits
+        if (!accountLimitService.isTransactionAmountAllowed(senderId, sender.getRole(), amount)) {
+            throw new IllegalStateException("Transaction amount exceeds allowed limits");
+        }
         
         // Calculate fee
         BigDecimal fee = calculateTransferFee(amount);
@@ -155,6 +161,11 @@ public class TransactionService {
     public Transaction createPaymentFromWallet(Long userId, BigDecimal amount, String description, Long merchantId) {
         User user = userService.findById(userId);
         Account account = accountService.findActiveAccountByUser(user);
+        
+        // Check transaction limits
+        if (!accountLimitService.isTransactionAmountAllowed(userId, user.getRole(), amount)) {
+            throw new IllegalStateException("Transaction amount exceeds allowed limits");
+        }
         
         // Calculate fee
         BigDecimal fee = calculatePaymentFee(amount);

@@ -1299,6 +1299,71 @@ body {
     border-bottom: none;
 }
 
+/* Accounts Grid */
+.accounts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.account-card {
+    padding: 1.5rem;
+    border: 1px solid var(--gray-medium);
+    border-radius: 8px;
+    background: var(--white);
+    transition: box-shadow 0.3s;
+}
+
+.account-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.account-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--gray-medium);
+}
+
+.account-number {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.account-currency {
+    padding: 0.25rem 0.75rem;
+    background-color: var(--primary-blue);
+    color: var(--white);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.account-balance {
+    margin: 1rem 0;
+}
+
+.account-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--gray-dark);
+}
+
+.form-inline {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.form-inline .form-group {
+    flex: 1;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .dashboard-grid {

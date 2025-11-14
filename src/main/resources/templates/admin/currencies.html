@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Currencies - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">Dashboard</a>
+                    <a th:href="@{/admin/users}" class="nav-link">Users</a>
+                    <a th:href="@{/admin/currencies}" class="nav-link active">Currencies</a>
+                    <a th:href="@{/admin/exchange-rates}" class="nav-link">Exchange Rates</a>
+                    <a th:href="@{/admin/account-limits}" class="nav-link">Account Limits</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Manage Currencies</h1>
+                <a th:href="@{/admin/currencies/new}" class="btn-primary">Add New Currency</a>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <div class="card">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Symbol</th>
+                            <th>Decimal Places</th>
+                            <th>Base Currency</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="currency : ${currencies}">
+                            <td th:text="${currency.currencyCode}"></td>
+                            <td th:text="${currency.currencyName}"></td>
+                            <td th:text="${currency.symbol}"></td>
+                            <td th:text="${currency.decimalPlaces}"></td>
+                            <td>
+                                <span th:if="${currency.isBaseCurrency}" class="badge-status active">Yes</span>
+                                <span th:unless="${currency.isBaseCurrency}">No</span>
+                            </td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${currency.isActive ? 'status-completed' : 'status-cancelled'}" 
+                                      th:text="${currency.isActive ? 'Active' : 'Inactive'}">
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/currencies/{id}/edit(id=${currency.id})}" class="btn-secondary btn-small">Edit</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

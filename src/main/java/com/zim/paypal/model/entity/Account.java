@@ -43,6 +43,10 @@ public class Account {
     @NotNull(message = "User is required")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "currency_id")
+    private Currency currency;
+
     @Column(nullable = false, precision = 19, scale = 2)
     @NotNull(message = "Balance is required")
     @DecimalMin(value = "0.0", message = "Balance cannot be negative")

@@ -50,5 +50,14 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
      * @return true if exists
      */
     boolean existsByAccountNumber(String accountNumber);
+
+    /**
+     * Count accounts by user ID
+     * 
+     * @param userId User ID
+     * @return Count of accounts
+     */
+    @Query("SELECT COUNT(a) FROM Account a WHERE a.user.id = :userId")
+    long countByUserId(@Param("userId") Long userId);
 }
 

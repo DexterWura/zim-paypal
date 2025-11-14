@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${currencyId != null ? 'Edit Currency' : 'Add Currency'}">Add Currency - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/currencies}" class="nav-link active">Currencies</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1 th:text="${currencyId != null ? 'Edit Currency' : 'Add New Currency'}">Add Currency</h1>
+                <a th:href="@{/admin/currencies}" class="btn-secondary">← Back to Currencies</a>
+            </div>
+
+            <div class="form-container">
+                <form th:action="${currencyId != null ? '/admin/currencies/' + currencyId + '/edit' : '/admin/currencies/new'}" 
+                      th:object="${currencyDto}" method="post" class="form-card">
+                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-error">
+                        <ul>
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="currencyCode">Currency Code (ISO 4217)</label>
+                        <input type="text" id="currencyCode" th:field="*{currencyCode}" class="form-control" required 
+                               maxlength="3" placeholder="e.g., USD, EUR, ZWL">
+                        <span th:if="${#fields.hasErrors('currencyCode')}" th:errors="*{currencyCode}" class="error-text"></span>
+                        <small class="form-text">3-letter ISO currency code</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="currencyName">Currency Name</label>
+                        <input type="text" id="currencyName" th:field="*{currencyName}" class="form-control" required 
+                               placeholder="e.g., US Dollar">
+                        <span th:if="${#fields.hasErrors('currencyName')}" th:errors="*{currencyName}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="symbol">Symbol</label>
+                        <input type="text" id="symbol" th:field="*{symbol}" class="form-control" required 
+                               placeholder="e.g., $, €, £">
+                        <span th:if="${#fields.hasErrors('symbol')}" th:errors="*{symbol}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="decimalPlaces">Decimal Places</label>
+                        <input type="number" id="decimalPlaces" th:field="*{decimalPlaces}" class="form-control" 
+                               min="0" max="6" required>
+                        <span th:if="${#fields.hasErrors('decimalPlaces')}" th:errors="*{decimalPlaces}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" th:field="*{isActive}"> Active
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" th:field="*{isBaseCurrency}"> Base Currency
+                        </label>
+                        <small class="form-text">Only one currency can be the base currency</small>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large" 
+                            th:text="${currencyId != null ? 'Update Currency' : 'Create Currency'}">Create Currency</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

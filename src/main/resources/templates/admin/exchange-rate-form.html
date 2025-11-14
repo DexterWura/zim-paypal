@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${rateId != null ? 'Edit Exchange Rate' : 'Add Exchange Rate'}">Add Exchange Rate - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/exchange-rates}" class="nav-link active">Exchange Rates</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1 th:text="${rateId != null ? 'Edit Exchange Rate' : 'Add New Exchange Rate'}">Add Exchange Rate</h1>
+                <a th:href="@{/admin/exchange-rates}" class="btn-secondary">← Back to Exchange Rates</a>
+            </div>
+
+            <div class="form-container">
+                <form th:action="${rateId != null ? '/admin/exchange-rates/' + rateId + '/edit' : '/admin/exchange-rates/new'}" 
+                      th:object="${rateDto}" method="post" class="form-card">
+                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-error">
+                        <ul>
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fromCurrencyId">From Currency</label>
+                        <select id="fromCurrencyId" th:field="*{fromCurrencyId}" class="form-control" required>
+                            <option value="">Select Currency</option>
+                            <option th:each="currency : ${currencies}" 
+                                    th:value="${currency.id}" 
+                                    th:text="${currency.currencyCode + ' - ' + currency.currencyName}">
+                            </option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('fromCurrencyId')}" th:errors="*{fromCurrencyId}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="toCurrencyId">To Currency</label>
+                        <select id="toCurrencyId" th:field="*{toCurrencyId}" class="form-control" required>
+                            <option value="">Select Currency</option>
+                            <option th:each="currency : ${currencies}" 
+                                    th:value="${currency.id}" 
+                                    th:text="${currency.currencyCode + ' - ' + currency.currencyName}">
+                            </option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('toCurrencyId')}" th:errors="*{toCurrencyId}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rate">Exchange Rate</label>
+                        <input type="number" id="rate" th:field="*{rate}" class="form-control" 
+                               step="0.000001" min="0.000001" required placeholder="1.000000">
+                        <span th:if="${#fields.hasErrors('rate')}" th:errors="*{rate}" class="error-text"></span>
+                        <small class="form-text">Rate to convert from currency to to currency</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="effectiveFrom">Effective From</label>
+                        <input type="datetime-local" id="effectiveFrom" th:field="*{effectiveFrom}" class="form-control" required>
+                        <span th:if="${#fields.hasErrors('effectiveFrom')}" th:errors="*{effectiveFrom}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="effectiveTo">Effective To (Optional)</label>
+                        <input type="datetime-local" id="effectiveTo" th:field="*{effectiveTo}" class="form-control">
+                        <small class="form-text">Leave blank for no expiry</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" th:field="*{isActive}"> Active
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large" 
+                            th:text="${rateId != null ? 'Update Exchange Rate' : 'Create Exchange Rate'}">Create Exchange Rate</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

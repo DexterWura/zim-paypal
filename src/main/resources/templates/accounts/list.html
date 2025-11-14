@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Accounts - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>My Accounts</h1>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <!-- Create New Account -->
+            <div class="card">
+                <h3>Create New Account</h3>
+                <form th:action="@{/accounts/create}" method="post" class="form-inline">
+                    <div class="form-group">
+                        <label for="currencyId">Currency</label>
+                        <select id="currencyId" name="currencyId" class="form-control" required>
+                            <option value="">Select Currency</option>
+                            <option th:each="currency : ${availableCurrencies}" 
+                                    th:value="${currency.id}" 
+                                    th:text="${currency.currencyCode + ' - ' + currency.currencyName}"
+                                    th:disabled="${accounts.?[currency.id == currency.id].size() > 0}">
+                            </option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">Create Account</button>
+                </form>
+            </div>
+
+            <!-- Accounts List -->
+            <div class="card">
+                <h3>Your Accounts</h3>
+                <div class="accounts-grid">
+                    <div th:each="account : ${accounts}" class="account-card">
+                        <div class="account-header">
+                            <div class="account-number" th:text="${account.accountNumber}"></div>
+                            <div class="account-currency" th:text="${account.currency != null ? account.currency.currencyCode : account.currencyCode}"></div>
+                        </div>
+                        <div class="account-balance">
+                            <div class="balance-label">Balance</div>
+                            <div class="balance-amount" 
+                                 th:text="${(account.currency != null ? account.currency.symbol : '$') + #numbers.formatDecimal(account.balance, 1, 2)}">
+                                $0.00
+                            </div>
+                        </div>
+                        <div class="account-details">
+                            <div><strong>Type:</strong> <span th:text="${account.accountType}"></span></div>
+                            <div><strong>Status:</strong> 
+                                <span class="status-badge" 
+                                      th:classappend="${'status-' + account.status.name().toLowerCase()}" 
+                                      th:text="${account.status}">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+
