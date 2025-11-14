@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Buttons - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/merchant/api-keys}" class="nav-link">API Keys</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Payment Buttons</h1>
+                <a th:href="@{/merchant/buttons/create}" class="btn-primary">Create Payment Button</a>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <div class="card">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Button Name</th>
+                            <th>Button Code</th>
+                            <th>Amount</th>
+                            <th>Clicks</th>
+                            <th>Payments</th>
+                            <th>Revenue</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="button : ${buttons}">
+                            <td th:text="${button.buttonName}"></td>
+                            <td><code th:text="${button.buttonCode}"></code></td>
+                            <td th:text="${button.amount != null ? (button.currency != null ? button.currency.symbol : '$') + #numbers.formatDecimal(button.amount, 1, 2) : 'Custom'}"></td>
+                            <td th:text="${button.totalClicks}"></td>
+                            <td th:text="${button.totalPayments}"></td>
+                            <td th:text="${(button.currency != null ? button.currency.symbol : '$') + #numbers.formatDecimal(button.totalRevenue, 1, 2)}"></td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${button.isActive ? 'status-active' : 'status-inactive'}" 
+                                      th:text="${button.isActive ? 'Active' : 'Inactive'}">
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{'/merchant/buttons/' + ${button.id}}" class="btn-secondary btn-small">View</a>
+                                <a th:href="@{'/checkout/' + ${button.buttonCode}}" target="_blank" class="btn-secondary btn-small">Test</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

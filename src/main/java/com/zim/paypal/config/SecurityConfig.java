@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll() // Auth endpoints
                 .requestMatchers("/pay/**").permitAll() // Public payment links
+                .requestMatchers("/checkout/**").permitAll() // Public checkout pages
                 .requestMatchers("/api/**").authenticated() // All other API endpoints require auth
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Details - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/merchant/buttons}" class="nav-link">← Back to Buttons</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Payment Button Details</h1>
+            </div>
+
+            <div class="card">
+                <div class="form-group">
+                    <label>Button Name</label>
+                    <div th:text="${button.buttonName}"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Button Code</label>
+                    <div class="link-code-display">
+                        <code th:text="${button.buttonCode}"></code>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Amount</label>
+                    <div th:text="${button.amount != null ? (button.currency != null ? button.currency.symbol : '$') + #numbers.formatDecimal(button.amount, 1, 2) : 'Custom Amount'}"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Statistics</label>
+                    <div>
+                        <p><strong>Total Clicks:</strong> <span th:text="${button.totalClicks}"></span></p>
+                        <p><strong>Total Payments:</strong> <span th:text="${button.totalPayments}"></span></p>
+                        <p><strong>Total Revenue:</strong> 
+                            <span th:text="${(button.currency != null ? button.currency.symbol : '$') + #numbers.formatDecimal(button.totalRevenue, 1, 2)}"></span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Checkout URL</label>
+                    <div class="url-display">
+                        <a th:href="${'http://localhost:80/checkout/' + button.buttonCode}" 
+                           th:text="${'http://localhost:80/checkout/' + button.buttonCode}" 
+                           target="_blank"></a>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Embed Code</label>
+                    <div style="background-color: var(--gray-light); padding: 1rem; border-radius: 4px; margin-top: 0.5rem;">
+                        <pre style="margin: 0; white-space: pre-wrap; word-wrap: break-word;" th:text="${embedCode}"></pre>
+                        <button onclick="copyEmbedCode()" class="btn-secondary" style="margin-top: 0.5rem;">Copy Code</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Preview</label>
+                    <div style="padding: 1rem; border: 1px solid var(--gray-medium); border-radius: 4px; text-align: center;">
+                        <a th:href="${'http://localhost:80/checkout/' + button.buttonCode}" 
+                           th:style="${'display: inline-block; padding: 12px 24px; background-color: ' + button.buttonColor + '; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;'}"
+                           target="_blank">
+                            Pay with Zim PayPal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function copyEmbedCode() {
+            const code = document.querySelector('pre').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Embed code copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>
+

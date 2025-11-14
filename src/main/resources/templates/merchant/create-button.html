@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Payment Button - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/merchant/buttons}" class="nav-link">← Back to Buttons</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Create Payment Button</h1>
+            </div>
+
+            <div class="form-container">
+                <form th:action="@{/merchant/buttons/create}" th:object="${buttonDto}" method="post" class="form-card">
+                    <div class="form-group">
+                        <label for="buttonName">Button Name *</label>
+                        <input type="text" id="buttonName" th:field="*{buttonName}" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" th:field="*{description}" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">Amount</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="amount" th:field="*{amount}" class="form-control" 
+                                   step="0.01" min="0.01">
+                        </div>
+                        <small class="form-text">Leave empty to allow custom amounts</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" th:field="*{allowCustomAmount}"> Allow Custom Amount
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="currencyId">Currency</label>
+                        <select id="currencyId" th:field="*{currencyId}" class="form-control">
+                            <option value="">Base Currency</option>
+                            <option th:each="currency : ${currencies}" 
+                                    th:value="${currency.id}" 
+                                    th:text="${currency.currencyCode + ' - ' + currency.currencyName}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="buttonStyle">Button Style</label>
+                        <select id="buttonStyle" th:field="*{buttonStyle}" class="form-control">
+                            <option th:each="style : ${buttonStyles}" th:value="${style}" th:text="${style}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="buttonSize">Button Size</label>
+                        <select id="buttonSize" th:field="*{buttonSize}" class="form-control">
+                            <option th:each="size : ${buttonSizes}" th:value="${size}" th:text="${size}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="buttonColor">Button Color</label>
+                        <input type="color" id="buttonColor" th:field="*{buttonColor}" class="form-control" 
+                               style="width: 100px; height: 40px;">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="successUrl">Success URL (Optional)</label>
+                        <input type="url" id="successUrl" th:field="*{successUrl}" class="form-control" 
+                               placeholder="https://yoursite.com/success">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cancelUrl">Cancel URL (Optional)</label>
+                        <input type="url" id="cancelUrl" th:field="*{cancelUrl}" class="form-control" 
+                               placeholder="https://yoursite.com/cancel">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notifyUrl">Webhook URL (Optional)</label>
+                        <input type="url" id="notifyUrl" th:field="*{notifyUrl}" class="form-control" 
+                               placeholder="https://yoursite.com/webhook">
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large">Create Payment Button</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

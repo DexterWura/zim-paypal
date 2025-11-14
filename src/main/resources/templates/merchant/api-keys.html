@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Keys - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/merchant/buttons}" class="nav-link">Payment Buttons</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>API Keys</h1>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${apiKey}" class="alert alert-info">
+                <strong>API Key:</strong> <code th:text="${apiKey}"></code><br>
+                <strong>API Secret:</strong> <code th:text="${apiSecret}"></code><br>
+                <strong style="color: #dc3545;">⚠️ Save this secret now - it won't be shown again!</strong>
+            </div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <!-- Create API Key Form -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <h3>Create New API Key</h3>
+                <form th:action="@{/merchant/api-keys/create}" method="post" class="form-card">
+                    <div class="form-group">
+                        <label for="keyName">Key Name *</label>
+                        <input type="text" id="keyName" name="keyName" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Create API Key</button>
+                </form>
+            </div>
+
+            <!-- API Keys List -->
+            <div class="card">
+                <h3>My API Keys</h3>
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Key Name</th>
+                            <th>API Key</th>
+                            <th>Usage Count</th>
+                            <th>Last Used</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="apiKey : ${apiKeys}">
+                            <td th:text="${apiKey.keyName}"></td>
+                            <td><code th:text="${apiKey.apiKey}"></code></td>
+                            <td th:text="${apiKey.usageCount}"></td>
+                            <td th:text="${apiKey.lastUsedAt != null ? #temporals.format(apiKey.lastUsedAt, 'MMM dd, yyyy HH:mm') : 'Never'}"></td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${apiKey.isActive ? 'status-active' : 'status-inactive'}" 
+                                      th:text="${apiKey.isActive ? 'Active' : 'Inactive'}">
+                                </span>
+                            </td>
+                            <td th:text="${#temporals.format(apiKey.createdAt, 'MMM dd, yyyy')}"></td>
+                            <td>
+                                <form th:if="${apiKey.isActive}" 
+                                      th:action="@{'/merchant/api-keys/' + ${apiKey.id} + '/revoke'}" 
+                                      method="post" style="display: inline;">
+                                    <button type="submit" class="btn-secondary btn-small" 
+                                            onclick="return confirm('Are you sure you want to revoke this API key?')">Revoke</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

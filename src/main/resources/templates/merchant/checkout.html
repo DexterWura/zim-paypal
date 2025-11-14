@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - <span th:text="${button.buttonName}"></span></title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="card" style="max-width: 600px; margin: 2rem auto;">
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+                <h2 th:text="${button.buttonName}">Payment</h2>
+                <p th:if="${button.description != null}" th:text="${button.description}"></p>
+
+                <div class="payment-amount">
+                    <div class="amount-label">Amount</div>
+                    <div class="amount-value" th:if="${button.amount != null}"
+                         th:text="${(button.currency != null ? button.currency.symbol : '$') + #numbers.formatDecimal(button.amount, 1, 2)}">
+                        $0.00
+                    </div>
+                </div>
+
+                <form th:action="@{'/checkout/' + ${button.buttonCode}}" method="post" class="form-card">
+                    <div class="form-group">
+                        <label for="customerEmail">Your Email *</label>
+                        <input type="email" id="customerEmail" name="customerEmail" class="form-control" required>
+                        <small class="form-text">You must have an account to pay</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customerName">Your Name</label>
+                        <input type="text" id="customerName" name="customerName" class="form-control">
+                    </div>
+
+                    <div class="form-group" th:if="${button.allowCustomAmount or button.amount == null}">
+                        <label for="amount">Payment Amount *</label>
+                        <div class="input-group">
+                            <span class="input-prefix" th:text="${button.currency != null ? button.currency.symbol : '$'}"></span>
+                            <input type="number" id="amount" name="amount" class="form-control" 
+                                   step="0.01" min="0.01" 
+                                   th:value="${button.amount != null ? button.amount : ''}"
+                                   th:required="${button.amount == null}" required>
+                        </div>
+                    </div>
+                    <input th:unless="${button.allowCustomAmount or button.amount == null}" 
+                           type="hidden" name="amount" th:value="${button.amount}">
+
+                    <div class="form-group">
+                        <label for="description">Description (Optional)</label>
+                        <input type="text" id="description" name="description" class="form-control">
+                    </div>
+
+                    <input type="hidden" name="buttonCode" th:value="${button.buttonCode}">
+
+                    <button type="submit" class="btn-primary btn-block btn-large">Pay Now</button>
+                </form>
+
+                <div class="payment-info">
+                    <p><strong>Merchant:</strong> <span th:text="${button.merchant.firstName + ' ' + button.merchant.lastName}"></span></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        .payment-amount {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 2rem;
+            background-color: var(--gray-light);
+            border-radius: 8px;
+        }
+
+        .amount-label {
+            font-size: 0.875rem;
+            color: var(--gray-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .amount-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+    </style>
+</body>
+</html>
+
