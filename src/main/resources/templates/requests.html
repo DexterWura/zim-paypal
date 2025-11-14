@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Requests - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Money Requests</h1>
+            </div>
+
+            <!-- Pending Requests Received -->
+            <div class="card" th:if="${!pendingReceived.isEmpty()}">
+                <h3>Pending Requests (Received)</h3>
+                <div class="request-list">
+                    <div th:each="request : ${pendingReceived}" class="request-item-card">
+                        <div class="request-item-header">
+                            <div class="request-amount-large" th:text="${'$' + #numbers.formatDecimal(request.amount, 1, 2)}">$0.00</div>
+                            <div class="request-status-badge pending">PENDING</div>
+                        </div>
+                        <div class="request-item-details">
+                            <div class="request-from-label">From:</div>
+                            <div class="request-from-name" th:text="${request.requester.firstName + ' ' + request.requester.lastName}"></div>
+                            <div class="request-message" th:if="${request.message != null}" th:text="${request.message}"></div>
+                            <div class="request-date" th:text="${'Requested on ' + #temporals.format(request.createdAt, 'MMM dd, yyyy')}"></div>
+                        </div>
+                        <div class="request-item-actions">
+                            <form th:action="@{/requests/{id}/approve(id=${request.id})}" method="post" style="display: inline;">
+                                <button type="submit" class="btn-primary">Pay Now</button>
+                            </form>
+                            <form th:action="@{/requests/{id}/decline(id=${request.id})}" method="post" style="display: inline;">
+                                <button type="submit" class="btn-secondary">Decline</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Requests Sent -->
+            <div class="card" th:if="${!pendingSent.isEmpty()}">
+                <h3>Pending Requests (Sent)</h3>
+                <div class="request-list">
+                    <div th:each="request : ${pendingSent}" class="request-item-card">
+                        <div class="request-item-header">
+                            <div class="request-amount-large" th:text="${'$' + #numbers.formatDecimal(request.amount, 1, 2)}">$0.00</div>
+                            <div class="request-status-badge pending">PENDING</div>
+                        </div>
+                        <div class="request-item-details">
+                            <div class="request-from-label">To:</div>
+                            <div class="request-from-name" th:text="${request.recipient.firstName + ' ' + request.recipient.lastName}"></div>
+                            <div class="request-message" th:if="${request.message != null}" th:text="${request.message}"></div>
+                            <div class="request-date" th:text="${'Requested on ' + #temporals.format(request.createdAt, 'MMM dd, yyyy')}"></div>
+                        </div>
+                        <div class="request-item-actions">
+                            <form th:action="@{/requests/{id}/cancel(id=${request.id})}" method="post" style="display: inline;">
+                                <button type="submit" class="btn-secondary">Cancel Request</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Requests History -->
+            <div class="card">
+                <h3>Request History</h3>
+                <div class="request-table">
+                    <div class="request-header-row">
+                        <div>Date</div>
+                        <div>Type</div>
+                        <div>From/To</div>
+                        <div>Amount</div>
+                        <div>Status</div>
+                    </div>
+                    <div th:each="request : ${requests.content}" class="request-row">
+                        <div th:text="${#temporals.format(request.createdAt, 'MMM dd, yyyy')}"></div>
+                        <div th:text="${request.requester.id == user.id ? 'Sent' : 'Received'}"></div>
+                        <div>
+                            <span th:if="${request.requester.id == user.id}" 
+                                  th:text="${'To: ' + request.recipient.firstName + ' ' + request.recipient.lastName}"></span>
+                            <span th:if="${request.recipient.id == user.id}" 
+                                  th:text="${'From: ' + request.requester.firstName + ' ' + request.requester.lastName}"></span>
+                        </div>
+                        <div class="request-amount" th:text="${'$' + #numbers.formatDecimal(request.amount, 1, 2)}"></div>
+                        <div>
+                            <span class="request-status-badge" 
+                                  th:classappend="${'status-' + request.status.name().toLowerCase()}" 
+                                  th:text="${request.status}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pagination" th:if="${requests.totalPages > 1}">
+                    <a th:href="@{/requests(page=${currentPage > 0 ? currentPage - 1 : 0})}" 
+                       th:classappend="${currentPage == 0 ? 'disabled' : ''}">Previous</a>
+                    <span th:text="${'Page ' + (currentPage + 1) + ' of ' + totalPages}"></span>
+                    <a th:href="@{/requests(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage})}" 
+                       th:classappend="${currentPage >= totalPages - 1 ? 'disabled' : ''}">Next</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

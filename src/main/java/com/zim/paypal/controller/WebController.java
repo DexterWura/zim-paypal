@@ -16,6 +16,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.zim.paypal.model.entity.MoneyRequest;
+import com.zim.paypal.model.entity.Transaction;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -34,6 +36,7 @@ public class WebController {
     private final TransactionService transactionService;
     private final CardService cardService;
     private final StatementService statementService;
+    private final MoneyRequestService moneyRequestService;
 
     @GetMapping("/")
     public String home() {
@@ -96,11 +99,17 @@ public class WebController {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Transaction> transactions = transactionService.getTransactionsByUser(user.getId(), pageable);
 
+        // Get pending money requests
+        List<com.zim.paypal.model.entity.MoneyRequest> pendingRequests = 
+                moneyRequestService.getPendingRequestsForRecipient(user.getId());
+
         model.addAttribute("user", user);
         model.addAttribute("account", account);
         model.addAttribute("cards", cards);
         model.addAttribute("transactions", transactions.getContent());
         model.addAttribute("balance", account.getBalance());
+        model.addAttribute("pendingRequests", pendingRequests);
+        model.addAttribute("pendingRequestCount", pendingRequests.size());
 
         return "dashboard";
     }
@@ -274,6 +283,107 @@ public class WebController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/pay";
+        }
+    }
+
+    @GetMapping("/request")
+    public String showRequestForm(Model model) {
+        model.addAttribute("moneyRequestDto", new com.zim.paypal.model.dto.MoneyRequestDto());
+        return "request";
+    }
+
+    @PostMapping("/request")
+    public String createRequest(@Valid @ModelAttribute com.zim.paypal.model.dto.MoneyRequestDto requestDto,
+                                BindingResult result,
+                                Authentication authentication,
+                                RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            return "request";
+        }
+
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            com.zim.paypal.model.entity.MoneyRequest request = moneyRequestService.createRequest(
+                    user.getId(), 
+                    requestDto.getRecipientEmail(), 
+                    requestDto.getAmount(), 
+                    requestDto.getMessage(), 
+                    requestDto.getNote());
+            redirectAttributes.addFlashAttribute("success", "Money request sent successfully!");
+            return "redirect:/dashboard";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/request";
+        }
+    }
+
+    @GetMapping("/requests")
+    public String requests(Authentication authentication,
+                          @RequestParam(defaultValue = "0") int page,
+                          @RequestParam(defaultValue = "20") int size,
+                          Model model) {
+        User user = userService.findByUsername(authentication.getName());
+        Pageable pageable = PageRequest.of(page, size);
+        Page<com.zim.paypal.model.entity.MoneyRequest> requests = 
+                moneyRequestService.getRequestsByUser(user.getId(), pageable);
+
+        // Get pending requests separately
+        List<com.zim.paypal.model.entity.MoneyRequest> pendingReceived = 
+                moneyRequestService.getPendingRequestsForRecipient(user.getId());
+        List<com.zim.paypal.model.entity.MoneyRequest> pendingSent = 
+                moneyRequestService.getPendingRequestsForRequester(user.getId());
+
+        model.addAttribute("user", user);
+        model.addAttribute("requests", requests);
+        model.addAttribute("pendingReceived", pendingReceived);
+        model.addAttribute("pendingSent", pendingSent);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", requests.getTotalPages());
+        return "requests";
+    }
+
+    @PostMapping("/requests/{id}/approve")
+    public String approveRequest(@PathVariable Long id,
+                                Authentication authentication,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            moneyRequestService.approveRequest(id, user.getId());
+            redirectAttributes.addFlashAttribute("success", "Money request approved and payment sent!");
+            return "redirect:/requests";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/requests";
+        }
+    }
+
+    @PostMapping("/requests/{id}/decline")
+    public String declineRequest(@PathVariable Long id,
+                                Authentication authentication,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            moneyRequestService.declineRequest(id, user.getId());
+            redirectAttributes.addFlashAttribute("success", "Money request declined.");
+            return "redirect:/requests";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/requests";
+        }
+    }
+
+    @PostMapping("/requests/{id}/cancel")
+    public String cancelRequest(@PathVariable Long id,
+                               Authentication authentication,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            moneyRequestService.cancelRequest(id, user.getId());
+            redirectAttributes.addFlashAttribute("success", "Money request cancelled.");
+            return "redirect:/requests";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/requests";
         }
     }
 }

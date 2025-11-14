@@ -44,12 +44,34 @@
                         <p class="balance-label" th:text="${account.accountNumber}"></p>
                     </div>
 
+                    <!-- Pending Money Requests -->
+                    <div class="card request-card" th:if="${pendingRequestCount > 0}">
+                        <div class="request-header">
+                            <h3>You received a request</h3>
+                        </div>
+                        <div th:each="request : ${pendingRequests}" class="request-item">
+                            <div class="request-amount" th:text="${'$' + #numbers.formatDecimal(request.amount, 1, 2)}">$0.00</div>
+                            <div class="request-info">
+                                <div class="request-from">From <span th:text="${request.requester.firstName + ' ' + request.requester.lastName}"></span></div>
+                                <div class="request-message" th:if="${request.message != null}" th:text="${request.message}"></div>
+                            </div>
+                            <div class="request-actions">
+                                <form th:action="@{/requests/{id}/approve(id=${request.id})}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn-primary btn-small">Pay Now</button>
+                                </form>
+                                <form th:action="@{/requests/{id}/decline(id=${request.id})}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn-secondary btn-small">Decline</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Quick Actions -->
                     <div class="card">
                         <h3>Quick Actions</h3>
                         <div class="action-buttons">
                             <a th:href="@{/send}" class="btn-primary btn-large">Send</a>
-                            <a th:href="@{/pay}" class="btn-secondary btn-large">Request</a>
+                            <a th:href="@{/request}" class="btn-secondary btn-large">Request</a>
                         </div>
                     </div>
 
@@ -77,7 +99,7 @@
                     <!-- Send/Request Buttons -->
                     <div class="action-buttons-horizontal">
                         <a th:href="@{/send}" class="btn-primary btn-large">Send</a>
-                        <a th:href="@{/pay}" class="btn-secondary btn-large">Request</a>
+                        <a th:href="@{/request}" class="btn-secondary btn-large">Request</a>
                     </div>
 
                     <!-- Quick Actions Grid -->

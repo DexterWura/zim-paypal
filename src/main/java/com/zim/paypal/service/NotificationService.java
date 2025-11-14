@@ -144,5 +144,154 @@ public class NotificationService {
         
         return message.toString();
     }
+
+    /**
+     * Send money request notification to recipient
+     * 
+     * @param request MoneyRequest entity
+     */
+    @Async
+    public void sendMoneyRequestNotification(com.zim.paypal.model.entity.MoneyRequest request) {
+        try {
+            User recipient = request.getRecipient();
+            String subject = "Money Request from " + request.getRequester().getFullName();
+            String message = buildMoneyRequestMessage(recipient, request);
+            
+            // Send email
+            if (recipient.getEmail() != null && recipient.getEmailVerified()) {
+                Notification emailNotification = Notification.builder()
+                        .user(recipient)
+                        .notificationType(Notification.NotificationType.PAYMENT_REQUEST)
+                        .channel(Notification.NotificationChannel.EMAIL)
+                        .recipient(recipient.getEmail())
+                        .subject(subject)
+                        .message(message)
+                        .status(Notification.NotificationStatus.PENDING)
+                        .referenceId(request.getRequestNumber())
+                        .build();
+                
+                emailNotification = notificationRepository.save(emailNotification);
+                
+                try {
+                    emailService.sendEmail(recipient.getEmail(), subject, message);
+                    emailNotification.markAsSent();
+                    notificationRepository.save(emailNotification);
+                } catch (Exception e) {
+                    emailNotification.markAsFailed(e.getMessage());
+                    notificationRepository.save(emailNotification);
+                    log.error("Failed to send email notification: {}", e.getMessage());
+                }
+            }
+            
+            // Send SMS
+            if (recipient.getPhoneNumber() != null && recipient.getPhoneVerified()) {
+                Notification smsNotification = Notification.builder()
+                        .user(recipient)
+                        .notificationType(Notification.NotificationType.PAYMENT_REQUEST)
+                        .channel(Notification.NotificationChannel.SMS)
+                        .recipient(recipient.getPhoneNumber())
+                        .message(message)
+                        .status(Notification.NotificationStatus.PENDING)
+                        .referenceId(request.getRequestNumber())
+                        .build();
+                
+                smsNotification = notificationRepository.save(smsNotification);
+                
+                try {
+                    smsService.sendSms(recipient.getPhoneNumber(), message);
+                    smsNotification.markAsSent();
+                    notificationRepository.save(smsNotification);
+                } catch (Exception e) {
+                    smsNotification.markAsFailed(e.getMessage());
+                    notificationRepository.save(smsNotification);
+                    log.error("Failed to send SMS notification: {}", e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error sending money request notification: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Send money request declined notification to requester
+     * 
+     * @param request MoneyRequest entity
+     */
+    @Async
+    public void sendMoneyRequestDeclinedNotification(com.zim.paypal.model.entity.MoneyRequest request) {
+        try {
+            User requester = request.getRequester();
+            String subject = "Money Request Declined";
+            String message = buildMoneyRequestDeclinedMessage(requester, request);
+            
+            // Send email
+            if (requester.getEmail() != null && requester.getEmailVerified()) {
+                Notification emailNotification = Notification.builder()
+                        .user(requester)
+                        .notificationType(Notification.NotificationType.PAYMENT_REQUEST)
+                        .channel(Notification.NotificationChannel.EMAIL)
+                        .recipient(requester.getEmail())
+                        .subject(subject)
+                        .message(message)
+                        .status(Notification.NotificationStatus.PENDING)
+                        .referenceId(request.getRequestNumber())
+                        .build();
+                
+                emailNotification = notificationRepository.save(emailNotification);
+                
+                try {
+                    emailService.sendEmail(requester.getEmail(), subject, message);
+                    emailNotification.markAsSent();
+                    notificationRepository.save(emailNotification);
+                } catch (Exception e) {
+                    emailNotification.markAsFailed(e.getMessage());
+                    notificationRepository.save(emailNotification);
+                    log.error("Failed to send email notification: {}", e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error sending money request declined notification: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Build money request message
+     */
+    private String buildMoneyRequestMessage(User recipient, com.zim.paypal.model.entity.MoneyRequest request) {
+        StringBuilder message = new StringBuilder();
+        message.append("Hello ").append(recipient.getFirstName()).append(",\n\n");
+        message.append(request.getRequester().getFullName()).append(" has requested ")
+               .append(request.getAmount()).append(" ").append(request.getCurrencyCode());
+        
+        if (request.getMessage() != null && !request.getMessage().isEmpty()) {
+            message.append(" for: ").append(request.getMessage());
+        }
+        
+        message.append(".\n\n");
+        message.append("Request Number: ").append(request.getRequestNumber()).append("\n");
+        if (request.getNote() != null && !request.getNote().isEmpty()) {
+            message.append("Note: ").append(request.getNote()).append("\n");
+        }
+        message.append("Please log in to approve or decline this request.\n\n");
+        message.append("Thank you for using Zim PayPal!");
+        
+        return message.toString();
+    }
+
+    /**
+     * Build money request declined message
+     */
+    private String buildMoneyRequestDeclinedMessage(User requester, com.zim.paypal.model.entity.MoneyRequest request) {
+        StringBuilder message = new StringBuilder();
+        message.append("Hello ").append(requester.getFirstName()).append(",\n\n");
+        message.append("Your money request of ").append(request.getAmount())
+               .append(" ").append(request.getCurrencyCode())
+               .append(" from ").append(request.getRecipient().getFullName())
+               .append(" has been declined.\n\n");
+        message.append("Request Number: ").append(request.getRequestNumber()).append("\n\n");
+        message.append("Thank you for using Zim PayPal!");
+        
+        return message.toString();
+    }
 }
 
