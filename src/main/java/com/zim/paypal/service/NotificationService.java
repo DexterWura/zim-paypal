@@ -352,5 +352,68 @@ public class NotificationService {
         
         return message.toString();
     }
+
+    /**
+     * Send bill split notification to participant
+     * 
+     * @param participant BillSplitParticipant entity
+     */
+    @Async
+    public void sendBillSplitNotification(com.zim.paypal.model.entity.BillSplitParticipant participant) {
+        try {
+            User user = participant.getUser();
+            com.zim.paypal.model.entity.BillSplit billSplit = participant.getBillSplit();
+            String subject = "Bill Split Request: " + billSplit.getDescription();
+            String message = buildBillSplitMessage(user, participant);
+            
+            // Send email
+            if (user.getEmail() != null && user.getEmailVerified()) {
+                Notification emailNotification = Notification.builder()
+                        .user(user)
+                        .notificationType(Notification.NotificationType.PAYMENT_REQUEST)
+                        .channel(Notification.NotificationChannel.EMAIL)
+                        .recipient(user.getEmail())
+                        .subject(subject)
+                        .message(message)
+                        .status(Notification.NotificationStatus.PENDING)
+                        .referenceId(billSplit.getSplitNumber())
+                        .build();
+                
+                emailNotification = notificationRepository.save(emailNotification);
+                
+                try {
+                    emailService.sendEmail(user.getEmail(), subject, message);
+                    emailNotification.markAsSent();
+                    notificationRepository.save(emailNotification);
+                } catch (Exception e) {
+                    emailNotification.markAsFailed(e.getMessage());
+                    notificationRepository.save(emailNotification);
+                    log.error("Failed to send email notification: {}", e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error sending bill split notification: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Build bill split message
+     */
+    private String buildBillSplitMessage(User user, com.zim.paypal.model.entity.BillSplitParticipant participant) {
+        com.zim.paypal.model.entity.BillSplit billSplit = participant.getBillSplit();
+        StringBuilder message = new StringBuilder();
+        message.append("Hello ").append(user.getFirstName()).append(",\n\n");
+        message.append(billSplit.getCreator().getFullName()).append(" has split a bill with you.\n\n");
+        message.append("Description: ").append(billSplit.getDescription()).append("\n");
+        message.append("Your share: ").append(participant.getAmount())
+               .append(" ").append(billSplit.getCurrencyCode()).append("\n");
+        message.append("Total amount: ").append(billSplit.getTotalAmount())
+               .append(" ").append(billSplit.getCurrencyCode()).append("\n");
+        message.append("Split Number: ").append(billSplit.getSplitNumber()).append("\n\n");
+        message.append("Please log in to pay your share.\n\n");
+        message.append("Thank you for using Zim PayPal!");
+        
+        return message.toString();
+    }
 }
 

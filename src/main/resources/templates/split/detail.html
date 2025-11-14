@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Split Details - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Bill Split: <span th:text="${billSplit.splitNumber}"></span></h1>
+                <a th:href="@{/split/my-splits}" class="btn-secondary">← Back to Splits</a>
+            </div>
+
+            <!-- Split Info -->
+            <div class="card">
+                <div class="split-info-header">
+                    <div>
+                        <h3 th:text="${billSplit.description}"></h3>
+                        <div class="split-meta">
+                            <span class="badge-role" th:text="${billSplit.splitMethod}"></span>
+                            <span class="status-badge" 
+                                  th:classappend="${'status-' + billSplit.status.name().toLowerCase().replace('_', '-')}" 
+                                  th:text="${billSplit.status}">
+                            </span>
+                        </div>
+                    </div>
+                    <div class="split-amount-section">
+                        <div class="split-total">
+                            <div class="split-label">Total Amount</div>
+                            <div class="split-amount-large" th:text="${'$' + #numbers.formatDecimal(billSplit.totalAmount, 1, 2)}">$0.00</div>
+                        </div>
+                        <div class="split-paid">
+                            <div class="split-label">Paid</div>
+                            <div class="split-amount" th:text="${'$' + #numbers.formatDecimal(billSplit.paidAmount, 1, 2)}">$0.00</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="split-details">
+                    <div><strong>Created by:</strong> <span th:text="${billSplit.creator.firstName + ' ' + billSplit.creator.lastName}"></span></div>
+                    <div><strong>Created:</strong> <span th:text="${#temporals.format(billSplit.createdAt, 'MMM dd, yyyy HH:mm')}"></span></div>
+                    <div th:if="${billSplit.expiresAt != null}">
+                        <strong>Expires:</strong> <span th:text="${#temporals.format(billSplit.expiresAt, 'MMM dd, yyyy')}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Participants -->
+            <div class="card">
+                <h3>Participants</h3>
+                <div class="participants-table">
+                    <div class="participant-header-row">
+                        <div>Name</div>
+                        <div>Email</div>
+                        <div>Amount</div>
+                        <div>Status</div>
+                        <div>Actions</div>
+                    </div>
+                    <div th:each="participant : ${participants}" class="participant-row">
+                        <div th:text="${participant.user.firstName + ' ' + participant.user.lastName}"></div>
+                        <div th:text="${participant.user.email}"></div>
+                        <div class="split-amount" th:text="${'$' + #numbers.formatDecimal(participant.amount, 1, 2)}"></div>
+                        <div>
+                            <span class="status-badge" 
+                                  th:classappend="${'status-' + participant.paymentStatus.name().toLowerCase().replace('_', '-')}" 
+                                  th:text="${participant.paymentStatus}">
+                            </span>
+                        </div>
+                        <div>
+                            <form th:if="${participant.user.id == user.id && !participant.isPaid()}" 
+                                  th:action="@{/split/{id}/pay(id=${billSplit.id})}" method="post" style="display: inline;">
+                                <input type="hidden" name="participantId" th:value="${participant.id}">
+                                <button type="submit" class="btn-primary btn-small">Pay Now</button>
+                            </form>
+                            <span th:if="${participant.isPaid()}" class="badge-status active">Paid</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Creator Actions -->
+            <div class="card" th:if="${isCreator && billSplit.status != T(com.zim.paypal.model.entity.BillSplit.SplitStatus).PAID}">
+                <h3>Actions</h3>
+                <form th:action="@{/split/{id}/cancel(id=${billSplit.id})}" method="post">
+                    <button type="submit" class="btn-secondary" 
+                            onclick="return confirm('Are you sure you want to cancel this bill split?')">
+                        Cancel Bill Split
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

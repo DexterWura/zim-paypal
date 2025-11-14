@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bill Splits - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>My Bill Splits</h1>
+                <a th:href="@{/split/create}" class="btn-primary">Create New Split</a>
+            </div>
+
+            <!-- Pending Participants -->
+            <div class="card" th:if="${!pendingParticipants.isEmpty()}">
+                <h3>Pending Payments</h3>
+                <div class="split-list">
+                    <div th:each="participant : ${pendingParticipants}" class="split-item-card">
+                        <div class="split-item-header">
+                            <div>
+                                <div class="split-description" th:text="${participant.billSplit.description}"></div>
+                                <div class="split-meta">
+                                    <span>Split #: <strong th:text="${participant.billSplit.splitNumber}"></strong></span>
+                                    <span>Created by: <strong th:text="${participant.billSplit.creator.firstName + ' ' + participant.billSplit.creator.lastName}"></strong></span>
+                                </div>
+                            </div>
+                            <div class="split-amount-large" th:text="${'$' + #numbers.formatDecimal(participant.amount, 1, 2)}">$0.00</div>
+                        </div>
+                        <div class="split-item-actions">
+                            <a th:href="@{/split/{id}(id=${participant.billSplit.id})}" class="btn-primary">View & Pay</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Created Splits -->
+            <div class="card">
+                <h3>Splits I Created</h3>
+                <div class="split-table">
+                    <div class="split-header-row">
+                        <div>Split #</div>
+                        <div>Description</div>
+                        <div>Total</div>
+                        <div>Paid</div>
+                        <div>Status</div>
+                        <div>Created</div>
+                        <div>Actions</div>
+                    </div>
+                    <div th:each="split : ${createdSplits.content}" class="split-row">
+                        <div th:text="${split.splitNumber}"></div>
+                        <div th:text="${split.description}"></div>
+                        <div th:text="${'$' + #numbers.formatDecimal(split.totalAmount, 1, 2)}"></div>
+                        <div th:text="${'$' + #numbers.formatDecimal(split.paidAmount, 1, 2)}"></div>
+                        <div>
+                            <span class="status-badge" 
+                                  th:classappend="${'status-' + split.status.name().toLowerCase().replace('_', '-')}" 
+                                  th:text="${split.status}">
+                            </span>
+                        </div>
+                        <div th:text="${#temporals.format(split.createdAt, 'MMM dd, yyyy')}"></div>
+                        <div>
+                            <a th:href="@{/split/{id}(id=${split.id})}" class="btn-secondary btn-small">View</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Participated Splits -->
+            <div class="card">
+                <h3>Splits I'm Participating In</h3>
+                <div class="split-table">
+                    <div class="split-header-row">
+                        <div>Split #</div>
+                        <div>Description</div>
+                        <div>My Share</div>
+                        <div>Status</div>
+                        <div>Created</div>
+                        <div>Actions</div>
+                    </div>
+                    <div th:each="split : ${participantSplits.content}" class="split-row">
+                        <div th:text="${split.splitNumber}"></div>
+                        <div th:text="${split.description}"></div>
+                        <div th:text="${participantAmounts != null && participantAmounts.containsKey(split.id) ? '$' + #numbers.formatDecimal(participantAmounts[split.id], 1, 2) : 'N/A'}"></div>
+                        <div>
+                            <span class="status-badge" 
+                                  th:classappend="${'status-' + split.status.name().toLowerCase().replace('_', '-')}" 
+                                  th:text="${split.status}">
+                            </span>
+                        </div>
+                        <div th:text="${#temporals.format(split.createdAt, 'MMM dd, yyyy')}"></div>
+                        <div>
+                            <a th:href="@{/split/{id}(id=${split.id})}" class="btn-secondary btn-small">View</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

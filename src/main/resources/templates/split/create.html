@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split a Bill - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Split a Bill</h1>
+                <a th:href="@{/split/my-splits}" class="btn-secondary">← My Splits</a>
+            </div>
+
+            <div class="form-container">
+                <form th:action="@{/split/create}" th:object="${splitDto}" method="post" class="form-card" id="splitForm">
+                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-error">
+                        <ul>
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">What's this for?</label>
+                        <input type="text" id="description" th:field="*{description}" class="form-control" required 
+                               placeholder="e.g., Dinner at restaurant">
+                        <span th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="totalAmount">Total Amount</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="totalAmount" th:field="*{totalAmount}" class="form-control" 
+                                   step="0.01" min="0.01" required placeholder="0.00">
+                        </div>
+                        <span th:if="${#fields.hasErrors('totalAmount')}" th:errors="*{totalAmount}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="splitMethod">Split Method</label>
+                        <select id="splitMethod" th:field="*{splitMethod}" class="form-control" required onchange="updateParticipantFields()">
+                            <option value="EQUAL">Split Equally</option>
+                            <option value="PERCENTAGE">Split by Percentage</option>
+                            <option value="CUSTOM">Split by Custom Amount</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Participants</label>
+                        <div id="participantsContainer">
+                            <div th:each="participant, iterStat : ${splitDto.participants}" class="participant-item">
+                                <div class="form-row">
+                                    <div class="form-group" style="flex: 2;">
+                                        <input type="email" th:field="*{participants[__${iterStat.index}__].email}" 
+                                               class="form-control" required placeholder="participant@example.com">
+                                    </div>
+                                    <div class="form-group" id="amountField" style="flex: 1; display: none;">
+                                        <input type="number" th:field="*{participants[__${iterStat.index}__].amount}" 
+                                               class="form-control" step="0.01" min="0.01" placeholder="Amount">
+                                    </div>
+                                    <div class="form-group" id="percentageField" style="flex: 1; display: none;">
+                                        <input type="number" th:field="*{participants[__${iterStat.index}__].percentage}" 
+                                               class="form-control" step="0.01" min="0" max="100" placeholder="%">
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn-secondary" onclick="removeParticipant(this)" th:if="${iterStat.index > 0}">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-secondary" onclick="addParticipant()" style="margin-top: 0.5rem;">Add Participant</button>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large">Create Bill Split</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function updateParticipantFields() {
+            const method = document.getElementById('splitMethod').value;
+            const amountFields = document.querySelectorAll('#amountField');
+            const percentageFields = document.querySelectorAll('#percentageField');
+            
+            amountFields.forEach(field => field.style.display = method === 'CUSTOM' ? 'block' : 'none');
+            percentageFields.forEach(field => field.style.display = method === 'PERCENTAGE' ? 'block' : 'none');
+        }
+
+        function addParticipant() {
+            const container = document.getElementById('participantsContainer');
+            const participantCount = container.children.length;
+            const method = document.getElementById('splitMethod').value;
+            
+            const newParticipant = document.createElement('div');
+            newParticipant.className = 'participant-item';
+            newParticipant.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group" style="flex: 2;">
+                        <input type="email" name="participants[${participantCount}].email" class="form-control" required placeholder="participant@example.com">
+                    </div>
+                    <div class="form-group" id="amountField" style="flex: 1; display: ${method === 'CUSTOM' ? 'block' : 'none'};">
+                        <input type="number" name="participants[${participantCount}].amount" class="form-control" step="0.01" min="0.01" placeholder="Amount">
+                    </div>
+                    <div class="form-group" id="percentageField" style="flex: 1; display: ${method === 'PERCENTAGE' ? 'block' : 'none'};">
+                        <input type="number" name="participants[${participantCount}].percentage" class="form-control" step="0.01" min="0" max="100" placeholder="%">
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn-secondary" onclick="removeParticipant(this)">Remove</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newParticipant);
+        }
+
+        function removeParticipant(button) {
+            button.closest('.participant-item').remove();
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateParticipantFields();
+        });
+    </script>
+</body>
+</html>
+

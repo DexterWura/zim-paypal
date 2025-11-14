@@ -76,6 +76,23 @@
                         </div>
                     </div>
 
+                    <!-- Pending Bill Splits -->
+                    <div class="card request-card" th:if="${pendingSplitCount > 0}">
+                        <div class="request-header">
+                            <h3>Pending Bill Splits</h3>
+                        </div>
+                        <div th:each="participant : ${pendingSplits}" class="request-item">
+                            <div class="request-amount" th:text="${'$' + #numbers.formatDecimal(participant.amount, 1, 2)}">$0.00</div>
+                            <div class="request-info">
+                                <div class="request-from" th:text="${participant.billSplit.description}"></div>
+                                <div class="request-message">From <span th:text="${participant.billSplit.creator.firstName + ' ' + participant.billSplit.creator.lastName}"></span></div>
+                            </div>
+                            <div class="request-actions">
+                                <a th:href="@{/split/{id}(id=${participant.billSplit.id})}" class="btn-primary btn-small">Pay Share</a>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Quick Actions -->
                     <div class="card">
                         <h3>Quick Actions</h3>
@@ -135,6 +152,10 @@
                             <a th:href="@{/support/tickets}" class="quick-action-item">
                                 <div class="quick-action-icon">🎫</div>
                                 <span>Support</span>
+                            </a>
+                            <a th:href="@{/split/create}" class="quick-action-item">
+                                <div class="quick-action-icon">🍽️</div>
+                                <span>Split Bill</span>
                             </a>
                         </div>
                     </div>

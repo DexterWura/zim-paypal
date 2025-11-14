@@ -36,6 +36,7 @@ public class WebController {
     private final StatementService statementService;
     private final MoneyRequestService moneyRequestService;
     private final RewardsService rewardsService;
+    private final BillSplitService billSplitService;
 
     @GetMapping("/")
     public String home() {
@@ -109,6 +110,10 @@ public class WebController {
         // Get rewards
         Rewards rewards = rewardsService.getRewardsByUserId(user.getId());
 
+        // Get pending bill split participants
+        List<com.zim.paypal.model.entity.BillSplitParticipant> pendingSplits = 
+                billSplitService.getPendingParticipants(user.getId());
+
         model.addAttribute("user", user);
         model.addAttribute("account", account);
         model.addAttribute("cards", cards);
@@ -117,6 +122,8 @@ public class WebController {
         model.addAttribute("pendingRequests", pendingRequests);
         model.addAttribute("pendingRequestCount", pendingRequests.size());
         model.addAttribute("rewards", rewards);
+        model.addAttribute("pendingSplits", pendingSplits);
+        model.addAttribute("pendingSplitCount", pendingSplits.size());
 
         return "dashboard";
     }
