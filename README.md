@@ -2,6 +2,14 @@
 
 A full-featured PayPal clone built with Spring Boot, featuring secure payment processing, multi-currency support, fraud detection, payment gateway integration, and comprehensive financial management tools.
 
+## 📸 Screenshots
+
+### User Dashboard
+![User Dashboard](preview/user-dashboard.png)
+
+### Admin Dashboard
+![Admin Dashboard](preview/admin-dashboard.png)
+
 ## 🚀 Current Status
 
 ### ✅ Completed Features
