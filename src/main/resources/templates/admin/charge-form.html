@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${chargeId != null ? 'Edit Charge' : 'Create Charge'}">Create Charge - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">Dashboard</a>
+                    <a th:href="@{/admin/charges}" class="nav-link active">Charges</a>
+                    <a th:href="@{/admin/taxes}" class="nav-link">Taxes</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1 th:text="${chargeId != null ? 'Edit Charge' : 'Create New Charge'}">Create Charge</h1>
+                <a th:href="@{/admin/charges}" class="btn-secondary">← Back to Charges</a>
+            </div>
+
+            <div class="form-container">
+                <form th:action="${chargeId != null ? '/admin/charges/' + chargeId + '/edit' : '/admin/charges/new'}" 
+                      th:object="${chargeDto}" method="post" class="form-card">
+                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-error">
+                        <ul>
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="chargeName">Charge Name</label>
+                        <input type="text" id="chargeName" th:field="*{chargeName}" class="form-control" required>
+                        <span th:if="${#fields.hasErrors('chargeName')}" th:errors="*{chargeName}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="chargeCode">Charge Code</label>
+                        <input type="text" id="chargeCode" th:field="*{chargeCode}" class="form-control" required 
+                               placeholder="e.g., TRANSFER_FEE">
+                        <span th:if="${#fields.hasErrors('chargeCode')}" th:errors="*{chargeCode}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="chargeType">Charge Type</label>
+                        <select id="chargeType" th:field="*{chargeType}" class="form-control" required>
+                            <option value="">Select Type</option>
+                            <option th:each="type : ${chargeTypes}" th:value="${type}" th:text="${type}"></option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('chargeType')}" th:errors="*{chargeType}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="transactionType">Transaction Type (Optional - leave blank for all)</label>
+                        <select id="transactionType" th:field="*{transactionType}" class="form-control">
+                            <option value="">All Transaction Types</option>
+                            <option th:each="type : ${transactionTypes}" th:value="${type}" th:text="${type}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="chargeMethod">Charge Method</label>
+                        <select id="chargeMethod" th:field="*{chargeMethod}" class="form-control" required onchange="updateChargeFields()">
+                            <option value="">Select Method</option>
+                            <option th:each="method : ${chargeMethods}" th:value="${method}" th:text="${method}"></option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('chargeMethod')}" th:errors="*{chargeMethod}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group" id="fixedAmountGroup">
+                        <label for="fixedAmount">Fixed Amount</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="fixedAmount" th:field="*{fixedAmount}" class="form-control" 
+                                   step="0.01" min="0" placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="percentageRateGroup">
+                        <label for="percentageRate">Percentage Rate</label>
+                        <div class="input-group">
+                            <input type="number" id="percentageRate" th:field="*{percentageRate}" class="form-control" 
+                                   step="0.01" min="0" max="100" placeholder="0.00">
+                            <span class="input-suffix">%</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="minAmount">Minimum Amount (Optional)</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="minAmount" th:field="*{minAmount}" class="form-control" 
+                                   step="0.01" min="0" placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxAmount">Maximum Amount (Optional)</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="maxAmount" th:field="*{maxAmount}" class="form-control" 
+                                   step="0.01" min="0" placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" th:field="*{isActive}"> Active
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" th:field="*{description}" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regulationReference">Regulation Reference</label>
+                        <input type="text" id="regulationReference" th:field="*{regulationReference}" class="form-control" 
+                               placeholder="e.g., Regulation 2024-001">
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large" 
+                            th:text="${chargeId != null ? 'Update Charge' : 'Create Charge'}">Create Charge</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function updateChargeFields() {
+            const method = document.getElementById('chargeMethod').value;
+            const fixedGroup = document.getElementById('fixedAmountGroup');
+            const percentageGroup = document.getElementById('percentageRateGroup');
+
+            if (method === 'FIXED') {
+                fixedGroup.style.display = 'block';
+                percentageGroup.style.display = 'none';
+            } else if (method === 'PERCENTAGE') {
+                fixedGroup.style.display = 'none';
+                percentageGroup.style.display = 'block';
+            } else if (method === 'FIXED_PLUS_PERCENTAGE') {
+                fixedGroup.style.display = 'block';
+                percentageGroup.style.display = 'block';
+            } else {
+                fixedGroup.style.display = 'none';
+                percentageGroup.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateChargeFields();
+        });
+    </script>
+</body>
+</html>
+

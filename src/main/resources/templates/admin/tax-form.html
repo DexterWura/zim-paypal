@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${taxId != null ? 'Edit Tax' : 'Create Tax'}">Create Tax - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">Dashboard</a>
+                    <a th:href="@{/admin/charges}" class="nav-link">Charges</a>
+                    <a th:href="@{/admin/taxes}" class="nav-link active">Taxes</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1 th:text="${taxId != null ? 'Edit Tax' : 'Create New Tax'}">Create Tax</h1>
+                <a th:href="@{/admin/taxes}" class="btn-secondary">← Back to Taxes</a>
+            </div>
+
+            <div class="form-container">
+                <form th:action="${taxId != null ? '/admin/taxes/' + taxId + '/edit' : '/admin/taxes/new'}" 
+                      th:object="${taxDto}" method="post" class="form-card">
+                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-error">
+                        <ul>
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taxName">Tax Name</label>
+                        <input type="text" id="taxName" th:field="*{taxName}" class="form-control" required>
+                        <span th:if="${#fields.hasErrors('taxName')}" th:errors="*{taxName}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taxCode">Tax Code</label>
+                        <input type="text" id="taxCode" th:field="*{taxCode}" class="form-control" required 
+                               placeholder="e.g., VAT">
+                        <span th:if="${#fields.hasErrors('taxCode')}" th:errors="*{taxCode}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taxType">Tax Type</label>
+                        <select id="taxType" th:field="*{taxType}" class="form-control" required>
+                            <option value="">Select Type</option>
+                            <option th:each="type : ${taxTypes}" th:value="${type}" th:text="${type}"></option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('taxType')}" th:errors="*{taxType}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taxRate">Tax Rate (%)</label>
+                        <div class="input-group">
+                            <input type="number" id="taxRate" th:field="*{taxRate}" class="form-control" 
+                                   step="0.01" min="0" max="100" required placeholder="0.00">
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <span th:if="${#fields.hasErrors('taxRate')}" th:errors="*{taxRate}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="transactionType">Transaction Type (Optional - leave blank for all)</label>
+                        <select id="transactionType" th:field="*{transactionType}" class="form-control">
+                            <option value="">All Transaction Types</option>
+                            <option th:each="type : ${transactionTypes}" th:value="${type}" th:text="${type}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" th:field="*{isActive}"> Active
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" th:field="*{description}" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regulationReference">Regulation Reference</label>
+                        <input type="text" id="regulationReference" th:field="*{regulationReference}" class="form-control" 
+                               placeholder="e.g., VAT Act 2024">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="effectiveFrom">Effective From (Optional)</label>
+                        <input type="datetime-local" id="effectiveFrom" th:field="*{effectiveFrom}" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="effectiveTo">Effective To (Optional)</label>
+                        <input type="datetime-local" id="effectiveTo" th:field="*{effectiveTo}" class="form-control">
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large" 
+                            th:text="${taxId != null ? 'Update Tax' : 'Create Tax'}">Create Tax</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+
