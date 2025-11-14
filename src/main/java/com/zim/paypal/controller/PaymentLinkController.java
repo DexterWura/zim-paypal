@@ -4,12 +4,17 @@ import com.zim.paypal.model.dto.PaymentLinkDto;
 import com.zim.paypal.model.entity.PaymentLink;
 import com.zim.paypal.service.PaymentLinkService;
 import com.zim.paypal.service.CurrencyService;
+import com.zim.paypal.service.QRCodeService;
 import com.zim.paypal.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,6 +35,7 @@ public class PaymentLinkController {
 
     private final PaymentLinkService paymentLinkService;
     private final CurrencyService currencyService;
+    private final QRCodeService qrCodeService;
     private final UserService userService;
 
     @GetMapping
@@ -83,7 +89,46 @@ public class PaymentLinkController {
     public String linkDetail(@PathVariable Long id, Model model) {
         PaymentLink link = paymentLinkService.getPaymentLinkById(id);
         model.addAttribute("link", link);
+        model.addAttribute("paymentUrl", qrCodeService.getPaymentUrl(link.getLinkCode()));
         return "payment-links/detail";
+    }
+
+    @GetMapping("/{id}/qr")
+    @ResponseBody
+    public ResponseEntity<byte[]> getQRCode(@PathVariable Long id) {
+        try {
+            PaymentLink link = paymentLinkService.getPaymentLinkById(id);
+            byte[] qrCodeImage = qrCodeService.generatePaymentLinkQRCode(link.getLinkCode());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_PNG);
+            headers.setContentLength(qrCodeImage.length);
+            headers.setContentDispositionFormData("attachment", "payment-link-qr-" + link.getLinkCode() + ".png");
+
+            return new ResponseEntity<>(qrCodeImage, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error generating QR code: {}", e.getMessage(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/qr/{linkCode}")
+    @ResponseBody
+    public ResponseEntity<byte[]> getQRCodeByLinkCode(@PathVariable String linkCode) {
+        try {
+            PaymentLink link = paymentLinkService.getPaymentLinkByCode(linkCode);
+            byte[] qrCodeImage = qrCodeService.generatePaymentLinkQRCode(link.getLinkCode());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_PNG);
+            headers.setContentLength(qrCodeImage.length);
+            headers.setContentDispositionFormData("attachment", "payment-link-qr-" + linkCode + ".png");
+
+            return new ResponseEntity<>(qrCodeImage, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error generating QR code: {}", e.getMessage(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
 

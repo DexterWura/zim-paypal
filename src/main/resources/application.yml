@@ -1,6 +1,9 @@
 spring:
   application:
     name: zim-paypal
+
+app:
+  base-url: http://localhost:8080
   
   datasource:
     url: jdbc:h2:mem:zimdb

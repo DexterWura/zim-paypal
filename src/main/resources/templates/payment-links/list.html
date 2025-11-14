@@ -66,6 +66,7 @@
                             <td>
                                 <a th:href="@{'/pay/' + ${link.linkCode}}" target="_blank" class="btn-secondary btn-small">View</a>
                                 <a th:href="@{'/payment-links/' + ${link.id}}" class="btn-secondary btn-small">Details</a>
+                                <a th:href="@{'/payment-links/qr/' + ${link.linkCode}}" class="btn-secondary btn-small" download>QR Code</a>
                             </td>
                         </tr>
                     </tbody>

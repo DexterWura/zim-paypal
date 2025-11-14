@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Link Details - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/payment-links}" class="nav-link">← Back to Links</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Payment Link Details</h1>
+            </div>
+
+            <div class="card">
+                <div class="payment-link-details">
+                    <div class="detail-section">
+                        <h3>Link Information</h3>
+                        <div class="form-group">
+                            <label>Title</label>
+                            <div th:text="${link.title}"></div>
+                        </div>
+                        <div class="form-group" th:if="${link.description != null}">
+                            <label>Description</label>
+                            <div th:text="${link.description}"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Amount</label>
+                            <div class="amount-display" 
+                                 th:text="${(link.currency != null ? link.currency.symbol : '$') + #numbers.formatDecimal(link.amount, 1, 2)}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Link Code</label>
+                            <div class="link-code-display">
+                                <code th:text="${link.linkCode}"></code>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Payment URL</label>
+                            <div class="url-display">
+                                <a th:href="${paymentUrl}" th:text="${paymentUrl}" target="_blank"></a>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <div>
+                                <span class="status-badge" 
+                                      th:classappend="${'status-' + link.status.name().toLowerCase()}" 
+                                      th:text="${link.status}">
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Type</label>
+                            <div th:text="${link.linkType}"></div>
+                        </div>
+                        <div class="form-group" th:if="${link.maxUses != null}">
+                            <label>Uses</label>
+                            <div th:text="${link.currentUses + ' / ' + link.maxUses}"></div>
+                        </div>
+                        <div class="form-group" th:if="${link.expiresAt != null}">
+                            <label>Expires At</label>
+                            <div th:text="${#temporals.format(link.expiresAt, 'MMM dd, yyyy HH:mm')}"></div>
+                        </div>
+                    </div>
+
+                    <div class="qr-section">
+                        <h3>QR Code</h3>
+                        <div class="qr-code-container">
+                            <img th:src="@{'/payment-links/qr/' + ${link.linkCode}}" 
+                                 alt="QR Code" 
+                                 class="qr-code-image">
+                            <div class="qr-actions">
+                                <a th:href="@{'/payment-links/qr/' + ${link.linkCode}}" 
+                                   download 
+                                   class="btn-primary">Download QR Code</a>
+                                <a th:href="${paymentUrl}" 
+                                   target="_blank" 
+                                   class="btn-secondary">View Payment Page</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        .payment-link-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .detail-section, .qr-section {
+            padding: 1rem;
+        }
+
+        .amount-display {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .link-code-display code {
+            background-color: var(--gray-light);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        .url-display a {
+            color: var(--primary-blue);
+            word-break: break-all;
+        }
+
+        .qr-code-container {
+            text-align: center;
+            padding: 1rem;
+            background-color: var(--gray-light);
+            border-radius: 8px;
+        }
+
+        .qr-code-image {
+            width: 250px;
+            height: 250px;
+            margin: 1rem auto;
+            display: block;
+            border: 2px solid var(--gray-medium);
+            border-radius: 8px;
+            background-color: white;
+            padding: 1rem;
+        }
+
+        .qr-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .payment-link-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>
+

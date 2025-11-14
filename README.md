@@ -229,7 +229,7 @@ This project is for educational purposes.
 
 ## 👨‍💻 Author
 
-Zim Development Team
+**dexterwura** - Zim Development Team
 
 ---
 

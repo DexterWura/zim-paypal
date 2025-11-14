@@ -63,6 +63,14 @@
                         <strong>Uses:</strong> <span th:text="${link.currentUses + ' / ' + link.maxUses}"></span>
                     </p>
                 </div>
+
+                <div class="qr-code-section" style="text-align: center; margin-top: 2rem; padding: 1rem; background-color: var(--gray-light); border-radius: 8px;">
+                    <h4>Scan to Pay</h4>
+                    <img th:src="@{'/payment-links/qr/' + ${link.linkCode}}" 
+                         alt="QR Code" 
+                         style="width: 200px; height: 200px; margin: 1rem auto; display: block; border: 2px solid var(--gray-medium); border-radius: 8px; background-color: white; padding: 0.5rem;">
+                    <p style="font-size: 0.875rem; color: var(--gray-dark);">Scan this QR code with your mobile device to pay</p>
+                </div>
             </div>
         </div>
     </main>
