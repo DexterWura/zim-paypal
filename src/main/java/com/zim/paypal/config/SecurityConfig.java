@@ -36,6 +36,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/register", "/login", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -52,7 +53,7 @@ public class SecurityConfig {
                 .permitAll()
             )
             .headers(headers -> headers
-                .frameOptions().sameOrigin() // Allow H2 console
+                .frameOptions(frameOptions -> frameOptions.sameOrigin()) // Allow H2 console
             );
 
         return http.build();

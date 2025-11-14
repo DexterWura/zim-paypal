@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accounts - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">Dashboard</a>
+                    <a th:href="@{/admin/users}" class="nav-link">Users</a>
+                    <a th:href="@{/admin/transactions}" class="nav-link">Transactions</a>
+                    <a th:href="@{/admin/accounts}" class="nav-link active">Accounts</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>All Accounts</h1>
+            </div>
+
+            <div class="card">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Account Number</th>
+                            <th>User</th>
+                            <th>Balance</th>
+                            <th>Currency</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="account : ${accounts}">
+                            <td th:text="${account.accountNumber}"></td>
+                            <td th:text="${account.user.username}"></td>
+                            <td th:text="${'$' + #numbers.formatDecimal(account.balance, 1, 2)}"></td>
+                            <td th:text="${account.currencyCode}"></td>
+                            <td th:text="${account.accountType}"></td>
+                            <td>
+                                <span class="badge-status" 
+                                      th:classappend="${account.status.name().toLowerCase()}"
+                                      th:text="${account.status}">
+                                </span>
+                            </td>
+                            <td th:text="${#temporals.format(account.createdAt, 'MMM dd, yyyy')}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link active">Dashboard</a>
+                    <a th:href="@{/admin/users}" class="nav-link">Users</a>
+                    <a th:href="@{/admin/transactions}" class="nav-link">Transactions</a>
+                    <a th:href="@{/admin/accounts}" class="nav-link">Accounts</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Admin Dashboard</h1>
+                <p class="subtitle">System Overview and Statistics</p>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Users</div>
+                        <div class="stat-value" th:text="${stats.totalUsers}">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Active Users</div>
+                        <div class="stat-value" th:text="${stats.activeUsers}">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🔒</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Locked Users</div>
+                        <div class="stat-value" th:text="${stats.lockedUsers}">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Balance</div>
+                        <div class="stat-value" th:text="${'$' + #numbers.formatDecimal(stats.totalBalance, 1, 2)}">$0.00</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">💳</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Accounts</div>
+                        <div class="stat-value" th:text="${stats.totalAccounts}">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Transactions</div>
+                        <div class="stat-value" th:text="${stats.totalTransactions}">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Completed Transactions</div>
+                        <div class="stat-value" th:text="${stats.completedTransactions}">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">💵</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Transaction Volume</div>
+                        <div class="stat-value" th:text="${'$' + #numbers.formatDecimal(stats.totalTransactionVolume, 1, 2)}">$0.00</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">💳</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Cards</div>
+                        <div class="stat-value" th:text="${stats.totalCards}">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Pending Requests</div>
+                        <div class="stat-value" th:text="${stats.pendingRequests}">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🆕</div>
+                    <div class="stat-content">
+                        <div class="stat-label">New Users (24h)</div>
+                        <div class="stat-value" th:text="${stats.recentUsers}">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Recent Transactions (24h)</div>
+                        <div class="stat-value" th:text="${stats.recentTransactions}">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <h3>Quick Actions</h3>
+                <div class="quick-actions-admin">
+                    <a th:href="@{/admin/users}" class="quick-action-btn">
+                        <span class="action-icon">👥</span>
+                        <span>Manage Users</span>
+                    </a>
+                    <a th:href="@{/admin/transactions}" class="quick-action-btn">
+                        <span class="action-icon">📊</span>
+                        <span>View Transactions</span>
+                    </a>
+                    <a th:href="@{/admin/accounts}" class="quick-action-btn">
+                        <span class="action-icon">💰</span>
+                        <span>Manage Accounts</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

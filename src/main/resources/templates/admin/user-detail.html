@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Details - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">Dashboard</a>
+                    <a th:href="@{/admin/users}" class="nav-link active">Users</a>
+                    <a th:href="@{/admin/transactions}" class="nav-link">Transactions</a>
+                    <a th:href="@{/admin/accounts}" class="nav-link">Accounts</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>User Details</h1>
+                <a th:href="@{/admin/users}" class="btn-secondary">← Back to Users</a>
+            </div>
+
+            <div class="user-detail-card">
+                <div class="user-detail-header">
+                    <div>
+                        <h2 th:text="${user.username}"></h2>
+                        <span class="badge-role" 
+                              th:classappend="${'role-' + user.role.name().toLowerCase()}" 
+                              th:text="${user.role}">
+                        </span>
+                    </div>
+                    <div>
+                        <span class="badge-status" 
+                              th:classappend="${user.accountLocked ? 'locked' : (user.accountEnabled ? 'active' : 'inactive')}"
+                              th:text="${user.accountLocked ? 'Locked' : (user.accountEnabled ? 'Active' : 'Inactive')}">
+                        </span>
+                    </div>
+                </div>
+
+                <div class="user-detail-info">
+                    <div class="user-detail-item">
+                        <div class="user-detail-label">User ID</div>
+                        <div class="user-detail-value" th:text="${user.id}"></div>
+                    </div>
+                    <div class="user-detail-item">
+                        <div class="user-detail-label">Email</div>
+                        <div class="user-detail-value" th:text="${user.email}"></div>
+                    </div>
+                    <div class="user-detail-item">
+                        <div class="user-detail-label">First Name</div>
+                        <div class="user-detail-value" th:text="${user.firstName}"></div>
+                    </div>
+                    <div class="user-detail-item">
+                        <div class="user-detail-label">Last Name</div>
+                        <div class="user-detail-value" th:text="${user.lastName}"></div>
+                    </div>
+                    <div class="user-detail-item">
+                        <div class="user-detail-label">Phone Number</div>
+                        <div class="user-detail-value" th:text="${user.phoneNumber != null ? user.phoneNumber : 'N/A'}"></div>
+                    </div>
+                    <div class="user-detail-item">
+                        <div class="user-detail-label">Email Verified</div>
+                        <div class="user-detail-value" th:text="${user.emailVerified ? 'Yes' : 'No'}"></div>
+                    </div>
+                    <div class="user-detail-item">
+                        <div class="user-detail-label">Phone Verified</div>
+                        <div class="user-detail-value" th:text="${user.phoneVerified ? 'Yes' : 'No'}"></div>
+                    </div>
+                    <div class="user-detail-item">
+                        <div class="user-detail-label">Failed Login Attempts</div>
+                        <div class="user-detail-value" th:text="${user.failedLoginAttempts}"></div>
+                    </div>
+                    <div class="user-detail-item">
+                        <div class="user-detail-label">Created At</div>
+                        <div class="user-detail-value" th:text="${#temporals.format(user.createdAt, 'MMM dd, yyyy HH:mm')}"></div>
+                    </div>
+                    <div class="user-detail-item">
+                        <div class="user-detail-label">Last Updated</div>
+                        <div class="user-detail-value" th:text="${#temporals.format(user.updatedAt, 'MMM dd, yyyy HH:mm')}"></div>
+                    </div>
+                </div>
+
+                <div class="user-actions-panel">
+                    <!-- Update Role -->
+                    <div class="card" style="flex: 1; min-width: 300px;">
+                        <h3>Update Role</h3>
+                        <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" class="action-form">
+                            <div class="form-group">
+                                <select name="role" class="form-control" required>
+                                    <option th:each="role : ${T(com.zim.paypal.model.entity.User.UserRole).values()}" 
+                                            th:value="${role}" 
+                                            th:selected="${role == user.role}"
+                                            th:text="${role}">
+                                    </option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-primary btn-block">Update Role</button>
+                        </form>
+                    </div>
+
+                    <!-- Enable/Disable Account -->
+                    <div class="card" style="flex: 1; min-width: 300px;">
+                        <h3>Account Status</h3>
+                        <form th:action="@{/admin/users/{id}/enable(id=${user.id})}" method="post" class="action-form">
+                            <input type="hidden" name="enabled" th:value="${!user.accountEnabled}">
+                            <button type="submit" class="btn-block" 
+                                    th:classappend="${user.accountEnabled ? 'btn-secondary' : 'btn-primary'}"
+                                    th:text="${user.accountEnabled ? 'Disable Account' : 'Enable Account'}">
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Lock/Unlock Account -->
+                    <div class="card" style="flex: 1; min-width: 300px;">
+                        <h3>Lock Status</h3>
+                        <form th:action="@{/admin/users/{id}/lock(id=${user.id})}" method="post" class="action-form">
+                            <input type="hidden" name="locked" th:value="${!user.accountLocked}">
+                            <button type="submit" class="btn-block" 
+                                    th:classappend="${user.accountLocked ? 'btn-primary' : 'btn-secondary'}"
+                                    th:text="${user.accountLocked ? 'Unlock Account' : 'Lock Account'}">
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

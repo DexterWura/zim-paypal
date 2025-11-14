@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">Dashboard</a>
+                    <a th:href="@{/admin/users}" class="nav-link">Users</a>
+                    <a th:href="@{/admin/transactions}" class="nav-link active">Transactions</a>
+                    <a th:href="@{/admin/accounts}" class="nav-link">Accounts</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>All Transactions</h1>
+            </div>
+
+            <div class="card">
+                <div class="transaction-table">
+                    <div class="transaction-header">
+                        <div>Date</div>
+                        <div>Transaction #</div>
+                        <div>Type</div>
+                        <div>From</div>
+                        <div>To</div>
+                        <div>Amount</div>
+                        <div>Status</div>
+                    </div>
+                    <div th:each="transaction : ${transactions.content}" class="transaction-row">
+                        <div th:text="${#temporals.format(transaction.createdAt, 'MMM dd, yyyy HH:mm')}"></div>
+                        <div th:text="${transaction.transactionNumber}"></div>
+                        <div th:text="${transaction.transactionType}"></div>
+                        <div th:text="${transaction.sender != null ? transaction.sender.username : 'N/A'}"></div>
+                        <div th:text="${transaction.receiver != null ? transaction.receiver.username : 'N/A'}"></div>
+                        <div class="transaction-amount" th:text="${'$' + #numbers.formatDecimal(transaction.amount, 1, 2)}"></div>
+                        <div>
+                            <span class="status-badge" th:classappend="${'status-' + transaction.status.name().toLowerCase()}" 
+                                  th:text="${transaction.status}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pagination" th:if="${transactions.totalPages > 1}">
+                    <a th:href="@{/admin/transactions(page=${currentPage > 0 ? currentPage - 1 : 0})}" 
+                       th:classappend="${currentPage == 0 ? 'disabled' : ''}">Previous</a>
+                    <span th:text="${'Page ' + (currentPage + 1) + ' of ' + totalPages}"></span>
+                    <a th:href="@{/admin/transactions(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage})}" 
+                       th:classappend="${currentPage >= totalPages - 1 ? 'disabled' : ''}">Next</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

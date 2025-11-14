@@ -21,6 +21,7 @@
                     <a th:href="@{/transactions}" class="nav-link">Activity</a>
                     <a th:href="@{/cards}" class="nav-link">Wallet</a>
                     <a th:href="@{/statements}" class="nav-link">Statements</a>
+                    <a th:href="@{/admin/dashboard}" class="nav-link" sec:authorize="hasRole('ADMIN')">Admin</a>
                 </nav>
                 <div class="header-actions">
                     <span class="user-name" th:text="${user.firstName}"></span>

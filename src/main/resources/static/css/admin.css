@@ -1,0 +1,236 @@
+/* Admin Dashboard Styles */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--white);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+    border-radius: 12px;
+    color: var(--white);
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--gray-dark);
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: var(--primary-blue);
+}
+
+.subtitle {
+    color: var(--gray-dark);
+    margin-top: 0.5rem;
+}
+
+.quick-actions-admin {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.quick-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: var(--white);
+    border: 2px solid var(--primary-blue);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--primary-blue);
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.quick-action-btn:hover {
+    background: var(--primary-blue);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+.action-icon {
+    font-size: 1.5rem;
+}
+
+/* User Management Table */
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.user-table th,
+.user-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--gray-medium);
+}
+
+.user-table th {
+    background-color: var(--gray-light);
+    font-weight: 600;
+    color: var(--primary-blue);
+}
+
+.user-table tr:hover {
+    background-color: var(--gray-light);
+}
+
+.user-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.badge-role {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-role.role-user {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge-role.role-admin {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.badge-role.role-merchant {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.badge-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badge-status.active {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.badge-status.inactive {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.badge-status.locked {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+/* User Detail Page */
+.user-detail-card {
+    background: var(--white);
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.user-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--gray-medium);
+}
+
+.user-detail-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.user-detail-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-detail-label {
+    font-size: 0.875rem;
+    color: var(--gray-dark);
+    margin-bottom: 0.25rem;
+}
+
+.user-detail-value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.user-actions-panel {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.action-form {
+    display: inline;
+}
+
+.search-form {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .user-detail-info {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-actions-admin {
+        flex-direction: column;
+    }
+}
+
