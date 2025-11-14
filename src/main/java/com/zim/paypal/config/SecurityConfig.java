@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .ignoringRequestMatchers("/api/**", "/h2-console/**") // Disable CSRF for API and H2 console
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/register", "/login", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
+                .requestMatchers("/", "/index", "/register", "/login", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll() // Auth endpoints
                 .requestMatchers("/api/gateways/**").permitAll() // Gateway callbacks/webhooks

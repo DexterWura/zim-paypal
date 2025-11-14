@@ -42,8 +42,12 @@ public class WebController {
     private final GatewayTransactionService gatewayTransactionService;
 
     @GetMapping("/")
-    public String home() {
-        return "redirect:/dashboard";
+    public String home(Authentication authentication) {
+        // Redirect authenticated users to dashboard
+        if (authentication != null && authentication.isAuthenticated()) {
+            return "redirect:/dashboard";
+        }
+        return "index";
     }
 
     @GetMapping("/login")

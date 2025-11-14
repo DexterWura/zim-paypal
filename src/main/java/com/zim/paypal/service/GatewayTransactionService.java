@@ -6,9 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import zw.co.paynow.core.MobileInitResponse;
-import zw.co.paynow.core.WebInitResponse;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -57,7 +56,7 @@ public class GatewayTransactionService {
         gatewayTransaction = gatewayTransactionRepository.save(gatewayTransaction);
         log.info("Gateway transaction initiated: {} for user: {}", gatewayTransaction.getId(), user.getUsername());
 
-        // Process the payment (this would integrate with actual gateway APIs)
+        // Process the payment
         processGatewayPayment(gatewayTransaction);
 
         return gatewayTransaction;
@@ -75,16 +74,12 @@ public class GatewayTransactionService {
 
         try {
             if ("PAYNOW_ZIM".equalsIgnoreCase(gatewayName)) {
-                // Use Paynow SDK for PayNow Zimbabwe
                 processPaynowPayment(gatewayTransaction);
             } else if ("ECOCASH".equalsIgnoreCase(gatewayName)) {
-                // EcoCash can also use Paynow SDK (mobile money)
                 processPaynowMobilePayment(gatewayTransaction);
             } else if ("PAYPAL".equalsIgnoreCase(gatewayName)) {
-                // PayPal integration (to be implemented)
                 processPayPalPayment(gatewayTransaction);
             } else {
-                // Fallback for other gateways
                 log.warn("Gateway {} not yet fully integrated, using fallback", gatewayName);
                 processFallbackPayment(gatewayTransaction);
             }
@@ -101,19 +96,30 @@ public class GatewayTransactionService {
      */
     private void processPaynowPayment(GatewayTransaction gatewayTransaction) {
         try {
-            WebInitResponse response = paynowIntegrationService.initiateWebPayment(
+            Object response = paynowIntegrationService.initiateWebPayment(
                     gatewayTransaction.getGateway(),
                     gatewayTransaction
             );
 
-            if (response.success()) {
-                gatewayTransaction.setGatewayTransactionId(response.pollUrl());
-                gatewayTransaction.setGatewayResponse("Redirect URL: " + response.redirectURL());
+            // Use reflection to get response data
+            Method success = response.getClass().getMethod("success");
+            Boolean isSuccess = (Boolean) success.invoke(response);
+
+            if (isSuccess) {
+                Method pollUrl = response.getClass().getMethod("pollUrl");
+                String pollUrlStr = (String) pollUrl.invoke(response);
+                Method redirectURL = response.getClass().getMethod("redirectURL");
+                String redirectUrlStr = (String) redirectURL.invoke(response);
+
+                gatewayTransaction.setGatewayTransactionId(pollUrlStr);
+                gatewayTransaction.setGatewayResponse("Redirect URL: " + redirectUrlStr);
                 gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.PROCESSING);
-                log.info("Paynow web payment initiated. Redirect URL: {}", response.redirectURL());
+                log.info("Paynow web payment initiated. Redirect URL: {}", redirectUrlStr);
             } else {
+                Method errors = response.getClass().getMethod("errors");
+                String errorStr = (String) errors.invoke(response);
                 gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.FAILED);
-                gatewayTransaction.setGatewayResponse("Paynow error: " + response.errors());
+                gatewayTransaction.setGatewayResponse("Paynow error: " + errorStr);
             }
             gatewayTransactionRepository.save(gatewayTransaction);
         } catch (Exception e) {
@@ -131,19 +137,30 @@ public class GatewayTransactionService {
                 throw new IllegalArgumentException("Phone number is required for mobile money payments");
             }
 
-            MobileInitResponse response = paynowIntegrationService.initiateMobilePayment(
+            Object response = paynowIntegrationService.initiateMobilePayment(
                     gatewayTransaction.getGateway(),
                     gatewayTransaction
             );
 
-            if (response.success()) {
-                gatewayTransaction.setGatewayTransactionId(response.pollUrl());
-                gatewayTransaction.setGatewayResponse("Instructions: " + response.instructions());
+            // Use reflection to get response data
+            Method success = response.getClass().getMethod("success");
+            Boolean isSuccess = (Boolean) success.invoke(response);
+
+            if (isSuccess) {
+                Method pollUrl = response.getClass().getMethod("pollUrl");
+                String pollUrlStr = (String) pollUrl.invoke(response);
+                Method instructions = response.getClass().getMethod("instructions");
+                String instructionsStr = (String) instructions.invoke(response);
+
+                gatewayTransaction.setGatewayTransactionId(pollUrlStr);
+                gatewayTransaction.setGatewayResponse("Instructions: " + instructionsStr);
                 gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.PROCESSING);
-                log.info("Paynow mobile payment initiated. Poll URL: {}", response.pollUrl());
+                log.info("Paynow mobile payment initiated. Poll URL: {}", pollUrlStr);
             } else {
+                Method errors = response.getClass().getMethod("errors");
+                String errorStr = (String) errors.invoke(response);
                 gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.FAILED);
-                gatewayTransaction.setGatewayResponse("Paynow error: " + response.errors());
+                gatewayTransaction.setGatewayResponse("Paynow error: " + errorStr);
             }
             gatewayTransactionRepository.save(gatewayTransaction);
         } catch (Exception e) {
@@ -156,7 +173,6 @@ public class GatewayTransactionService {
      * Process PayPal payment (placeholder for future implementation)
      */
     private void processPayPalPayment(GatewayTransaction gatewayTransaction) {
-        // TODO: Implement PayPal integration
         log.warn("PayPal integration not yet implemented");
         processFallbackPayment(gatewayTransaction);
     }
@@ -165,7 +181,6 @@ public class GatewayTransactionService {
      * Fallback payment processing (for testing or unsupported gateways)
      */
     private void processFallbackPayment(GatewayTransaction gatewayTransaction) {
-        // Simulate successful payment for testing
         try {
             Transaction depositTransaction = transactionService.createDeposit(
                     gatewayTransaction.getUser().getId(),
@@ -218,11 +233,13 @@ public class GatewayTransactionService {
 
             if ("PAYNOW_ZIM".equalsIgnoreCase(gateway.getGatewayName()) || 
                 "ECOCASH".equalsIgnoreCase(gateway.getGatewayName())) {
-                zw.co.paynow.core.StatusResponse status = paynowIntegrationService.pollTransactionStatus(
-                        gateway, pollUrl);
+                Object status = paynowIntegrationService.pollTransactionStatus(gateway, pollUrl);
 
-                if (status.isPaid()) {
-                    // Payment completed - create deposit transaction
+                // Use reflection to check if paid
+                Method isPaid = status.getClass().getMethod("isPaid");
+                Boolean paid = (Boolean) isPaid.invoke(status);
+
+                if (paid) {
                     if (gatewayTransaction.getTransaction() == null) {
                         Transaction depositTransaction = transactionService.createDeposit(
                                 gatewayTransaction.getUser().getId(),
@@ -243,4 +260,3 @@ public class GatewayTransactionService {
         }
     }
 }
-

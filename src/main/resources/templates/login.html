@@ -3,15 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Zim PayPal</title>
+    <title>Log In - Zim PayPal</title>
+    <!-- FontAwesome 6.5.1 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+        }
+        .login-left {
+            flex: 1;
+            background: linear-gradient(135deg, #003087 0%, #009cde 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .login-left::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -100px;
+            left: -100px;
+        }
+        .login-left::after {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            bottom: -50px;
+            right: -50px;
+        }
+        .login-left-content {
+            position: relative;
+            z-index: 1;
+            color: white;
+            text-align: center;
+            max-width: 500px;
+        }
+        .login-left-content h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        .login-left-content p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        .login-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            background: #f5f5f5;
+        }
+        .login-form-container {
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-form-header {
+            margin-bottom: 2rem;
+        }
+        .login-form-header h2 {
+            color: #003087;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .login-form-header p {
+            color: #666;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #003087;
+            box-shadow: 0 0 0 3px rgba(0, 48, 135, 0.1);
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 0.75rem;
+            background: #003087;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-primary:hover {
+            background: #001d5c;
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .alert-error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+        .alert-info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        .login-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            color: #666;
+        }
+        .login-footer a {
+            color: #003087;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 768px) {
+            .login-page {
+                flex-direction: column;
+            }
+            .login-left {
+                min-height: 40vh;
+            }
+        }
+    </style>
 </head>
-<body class="auth-page">
-    <div class="auth-container">
-        <div class="auth-card">
-            <div class="logo-center">
-                <span class="logo-icon-large">P</span>
-                <h1>Zim PayPal</h1>
+<body class="login-page">
+    <div class="login-left">
+        <div class="login-left-content">
+            <h1><i class="fas fa-wallet"></i> Zim PayPal</h1>
+            <p>Innovative Digital Payments and E-commerce Solutions</p>
+            <p style="margin-top: 1rem; font-size: 1rem; opacity: 0.8;">Helping businesses to <strong>#GetPaid</strong> online</p>
+        </div>
+    </div>
+    
+    <div class="login-right">
+        <div class="login-form-container">
+            <div class="login-form-header">
+                <h2>Log In</h2>
+                <p>Welcome back! Please log in to your account.</p>
             </div>
             
             <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
@@ -19,23 +178,24 @@
             
             <form th:action="@{/login}" method="post" class="auth-form">
                 <div class="form-group">
-                    <label for="username">Email or Username</label>
-                    <input type="text" id="username" name="username" class="form-control" required autofocus>
+                    <label for="username"><i class="fas fa-user"></i> Email or Username</label>
+                    <input type="text" id="username" name="username" class="form-control" required autofocus placeholder="Enter your email or username">
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" class="form-control" required>
+                    <label for="password"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="password" name="password" class="form-control" required placeholder="Enter your password">
                 </div>
                 
-                <button type="submit" class="btn-primary btn-block">Log In</button>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Log In
+                </button>
             </form>
             
-            <div class="auth-footer">
+            <div class="login-footer">
                 <p>Don't have an account? <a th:href="@{/register}">Sign up</a></p>
             </div>
         </div>
     </div>
 </body>
 </html>
-

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zim PayPal - Digital Payments Made Easy</title>
+    <!-- FontAwesome 6.5.1 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .landing-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #003087 0%, #009cde 100%);
+        }
+        .landing-hero {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 90vh;
+            padding: 2rem;
+        }
+        .hero-content {
+            text-align: center;
+            color: white;
+            max-width: 800px;
+        }
+        .hero-content h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        .hero-content p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-hero {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .btn-hero:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        .btn-hero-primary {
+            background: white;
+            color: #003087;
+        }
+        .btn-hero-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        .features-section {
+            background: white;
+            padding: 4rem 2rem;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .feature-card {
+            text-align: center;
+            padding: 2rem;
+        }
+        .feature-icon {
+            font-size: 3rem;
+            color: #003087;
+            margin-bottom: 1rem;
+        }
+        .feature-card h3 {
+            color: #003087;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="landing-page">
+    <header class="header" style="background: rgba(0, 48, 135, 0.9);">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <i class="fas fa-wallet"></i>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <div class="header-actions">
+                    <a th:href="@{/login}" class="btn-hero-secondary" style="padding: 0.5rem 1.5rem; text-decoration: none;">Log In</a>
+                    <a th:href="@{/register}" class="btn-hero-primary" style="padding: 0.5rem 1.5rem; text-decoration: none;">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="landing-hero">
+            <div class="hero-content">
+                <h1><i class="fas fa-wallet"></i> Zim PayPal</h1>
+                <p>Innovative Digital Payments and E-commerce Solutions</p>
+                <p style="font-size: 1.2rem;">Helping businesses and individuals to <strong>#GetPaid</strong> online</p>
+                <div class="hero-buttons">
+                    <a th:href="@{/register}" class="btn-hero btn-hero-primary">Get Started</a>
+                    <a th:href="@{/login}" class="btn-hero btn-hero-secondary">Log In</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="features-section">
+            <div class="container">
+                <h2 style="text-align: center; color: #003087; margin-bottom: 3rem; font-size: 2.5rem;">Why Choose Zim PayPal?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                        <h3>Secure Payments</h3>
+                        <p>Bank-level security with 2FA, fraud detection, and AML compliance</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-globe"></i></div>
+                        <h3>Multi-Currency</h3>
+                        <p>Support for multiple currencies with real-time exchange rates</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
+                        <h3>Mobile Money</h3>
+                        <p>Pay with EcoCash, PayNow, and other mobile payment methods</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                        <h3>Advanced Reporting</h3>
+                        <p>Comprehensive financial reports and analytics</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-store"></i></div>
+                        <h3>Merchant Tools</h3>
+                        <p>Payment buttons, checkout integration, and API access</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-headset"></i></div>
+                        <h3>24/7 Support</h3>
+                        <p>Dedicated support system for all your needs</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer" style="background: #001d5c; color: white; padding: 2rem 0;">
+        <div class="container">
+            <div style="text-align: center;">
+                <p>&copy; 2024 Zim PayPal. All rights reserved.</p>
+                <p style="margin-top: 0.5rem; opacity: 0.8;">Built with Spring Boot | Secure | Reliable</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+
