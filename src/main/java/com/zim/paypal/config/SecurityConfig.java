@@ -43,6 +43,7 @@ public class SecurityConfig {
                 .requestMatchers("/", "/register", "/login", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll() // Auth endpoints
+                .requestMatchers("/api/gateways/**").permitAll() // Gateway callbacks/webhooks
                 .requestMatchers("/pay/**").permitAll() // Public payment links
                 .requestMatchers("/checkout/**").permitAll() // Public checkout pages
                 .requestMatchers("/api/**").authenticated() // All other API endpoints require auth (JWT)

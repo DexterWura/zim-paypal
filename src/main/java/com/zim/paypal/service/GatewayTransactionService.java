@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import zw.co.paynow.core.MobileInitResponse;
+import zw.co.paynow.core.WebInitResponse;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -26,6 +28,7 @@ public class GatewayTransactionService {
     private final UserService userService;
     private final AccountService accountService;
     private final TransactionService transactionService;
+    private final PaynowIntegrationService paynowIntegrationService;
 
     /**
      * Initiate a deposit via payment gateway
@@ -61,22 +64,109 @@ public class GatewayTransactionService {
     }
 
     /**
-     * Process gateway payment (placeholder for actual gateway integration)
+     * Process gateway payment using actual gateway APIs
      */
     private void processGatewayPayment(GatewayTransaction gatewayTransaction) {
-        // This is a placeholder - in production, this would:
-        // 1. Call the actual gateway API (EcoCash, PayNow, PayPal)
-        // 2. Handle the response
-        // 3. Update transaction status
-        // 4. Create deposit transaction if successful
+        PaymentGateway gateway = gatewayTransaction.getGateway();
+        String gatewayName = gateway.getGatewayName();
 
         gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.PROCESSING);
         gatewayTransactionRepository.save(gatewayTransaction);
 
-        // Simulate successful payment for now
-        // In production, this would be handled via webhook/callback
         try {
-            // Create deposit transaction
+            if ("PAYNOW_ZIM".equalsIgnoreCase(gatewayName)) {
+                // Use Paynow SDK for PayNow Zimbabwe
+                processPaynowPayment(gatewayTransaction);
+            } else if ("ECOCASH".equalsIgnoreCase(gatewayName)) {
+                // EcoCash can also use Paynow SDK (mobile money)
+                processPaynowMobilePayment(gatewayTransaction);
+            } else if ("PAYPAL".equalsIgnoreCase(gatewayName)) {
+                // PayPal integration (to be implemented)
+                processPayPalPayment(gatewayTransaction);
+            } else {
+                // Fallback for other gateways
+                log.warn("Gateway {} not yet fully integrated, using fallback", gatewayName);
+                processFallbackPayment(gatewayTransaction);
+            }
+        } catch (Exception e) {
+            log.error("Error processing gateway payment: {}", e.getMessage(), e);
+            gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.FAILED);
+            gatewayTransaction.setGatewayResponse("Error: " + e.getMessage());
+            gatewayTransactionRepository.save(gatewayTransaction);
+        }
+    }
+
+    /**
+     * Process Paynow web payment
+     */
+    private void processPaynowPayment(GatewayTransaction gatewayTransaction) {
+        try {
+            WebInitResponse response = paynowIntegrationService.initiateWebPayment(
+                    gatewayTransaction.getGateway(),
+                    gatewayTransaction
+            );
+
+            if (response.success()) {
+                gatewayTransaction.setGatewayTransactionId(response.pollUrl());
+                gatewayTransaction.setGatewayResponse("Redirect URL: " + response.redirectURL());
+                gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.PROCESSING);
+                log.info("Paynow web payment initiated. Redirect URL: {}", response.redirectURL());
+            } else {
+                gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.FAILED);
+                gatewayTransaction.setGatewayResponse("Paynow error: " + response.errors());
+            }
+            gatewayTransactionRepository.save(gatewayTransaction);
+        } catch (Exception e) {
+            log.error("Error processing Paynow payment: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /**
+     * Process Paynow mobile payment (EcoCash, OneMoney)
+     */
+    private void processPaynowMobilePayment(GatewayTransaction gatewayTransaction) {
+        try {
+            if (gatewayTransaction.getPhoneNumber() == null || gatewayTransaction.getPhoneNumber().isEmpty()) {
+                throw new IllegalArgumentException("Phone number is required for mobile money payments");
+            }
+
+            MobileInitResponse response = paynowIntegrationService.initiateMobilePayment(
+                    gatewayTransaction.getGateway(),
+                    gatewayTransaction
+            );
+
+            if (response.success()) {
+                gatewayTransaction.setGatewayTransactionId(response.pollUrl());
+                gatewayTransaction.setGatewayResponse("Instructions: " + response.instructions());
+                gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.PROCESSING);
+                log.info("Paynow mobile payment initiated. Poll URL: {}", response.pollUrl());
+            } else {
+                gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.FAILED);
+                gatewayTransaction.setGatewayResponse("Paynow error: " + response.errors());
+            }
+            gatewayTransactionRepository.save(gatewayTransaction);
+        } catch (Exception e) {
+            log.error("Error processing Paynow mobile payment: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /**
+     * Process PayPal payment (placeholder for future implementation)
+     */
+    private void processPayPalPayment(GatewayTransaction gatewayTransaction) {
+        // TODO: Implement PayPal integration
+        log.warn("PayPal integration not yet implemented");
+        processFallbackPayment(gatewayTransaction);
+    }
+
+    /**
+     * Fallback payment processing (for testing or unsupported gateways)
+     */
+    private void processFallbackPayment(GatewayTransaction gatewayTransaction) {
+        // Simulate successful payment for testing
+        try {
             Transaction depositTransaction = transactionService.createDeposit(
                     gatewayTransaction.getUser().getId(),
                     gatewayTransaction.getAmount(),
@@ -88,12 +178,10 @@ public class GatewayTransactionService {
             gatewayTransaction.setGatewayTransactionId("GTX" + gatewayTransaction.getId());
             gatewayTransactionRepository.save(gatewayTransaction);
 
-            log.info("Gateway transaction completed: {}", gatewayTransaction.getId());
+            log.info("Fallback payment processed successfully: {}", gatewayTransaction.getId());
         } catch (Exception e) {
-            log.error("Error processing gateway payment: {}", e.getMessage());
-            gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.FAILED);
-            gatewayTransaction.setGatewayResponse("Error: " + e.getMessage());
-            gatewayTransactionRepository.save(gatewayTransaction);
+            log.error("Error in fallback payment processing: {}", e.getMessage());
+            throw e;
         }
     }
 
@@ -113,6 +201,46 @@ public class GatewayTransactionService {
     public GatewayTransaction getByGatewayTransactionId(String gatewayTransactionId) {
         return gatewayTransactionRepository.findByGatewayTransactionId(gatewayTransactionId)
                 .orElseThrow(() -> new IllegalArgumentException("Gateway transaction not found"));
+    }
+
+    /**
+     * Poll and update transaction status from gateway
+     */
+    public void pollAndUpdateTransactionStatus(GatewayTransaction gatewayTransaction) {
+        try {
+            PaymentGateway gateway = gatewayTransaction.getGateway();
+            String pollUrl = gatewayTransaction.getGatewayTransactionId();
+
+            if (pollUrl == null || !pollUrl.startsWith("http")) {
+                log.warn("Invalid poll URL for transaction: {}", gatewayTransaction.getId());
+                return;
+            }
+
+            if ("PAYNOW_ZIM".equalsIgnoreCase(gateway.getGatewayName()) || 
+                "ECOCASH".equalsIgnoreCase(gateway.getGatewayName())) {
+                zw.co.paynow.core.StatusResponse status = paynowIntegrationService.pollTransactionStatus(
+                        gateway, pollUrl);
+
+                if (status.isPaid()) {
+                    // Payment completed - create deposit transaction
+                    if (gatewayTransaction.getTransaction() == null) {
+                        Transaction depositTransaction = transactionService.createDeposit(
+                                gatewayTransaction.getUser().getId(),
+                                gatewayTransaction.getAmount(),
+                                "Deposit via " + gateway.getDisplayName()
+                        );
+                        gatewayTransaction.setTransaction(depositTransaction);
+                    }
+                    gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.COMPLETED);
+                    log.info("Transaction {} confirmed as paid", gatewayTransaction.getId());
+                } else {
+                    gatewayTransaction.setStatus(GatewayTransaction.TransactionStatus.PENDING);
+                }
+                gatewayTransactionRepository.save(gatewayTransaction);
+            }
+        } catch (Exception e) {
+            log.error("Error polling transaction status: {}", e.getMessage(), e);
+        }
     }
 }
 

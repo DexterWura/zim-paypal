@@ -4,7 +4,7 @@
 
 -- Payment Gateway table
 CREATE TABLE IF NOT EXISTS payment_gateways (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGSERIAL PRIMARY KEY,
     gateway_name VARCHAR(50) NOT NULL UNIQUE,
     display_name VARCHAR(100) NOT NULL,
     gateway_type VARCHAR(50) NOT NULL,
@@ -16,12 +16,12 @@ CREATE TABLE IF NOT EXISTS payment_gateways (
     callback_url VARCHAR(500),
     additional_config TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Payment Gateway Transactions (to track deposits via gateways)
 CREATE TABLE IF NOT EXISTS gateway_transactions (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     account_id BIGINT NOT NULL,
     gateway_id BIGINT NOT NULL,
@@ -35,15 +35,17 @@ CREATE TABLE IF NOT EXISTS gateway_transactions (
     email VARCHAR(100),
     gateway_response TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (account_id) REFERENCES accounts(id),
     FOREIGN KEY (gateway_id) REFERENCES payment_gateways(id),
-    FOREIGN KEY (transaction_id) REFERENCES transactions(id),
-    INDEX idx_gateway_transaction_id (gateway_transaction_id),
-    INDEX idx_user_gateway (user_id, gateway_id),
-    INDEX idx_status (status)
+    FOREIGN KEY (transaction_id) REFERENCES transactions(id)
 );
+
+-- Create indexes separately for H2 compatibility
+CREATE INDEX idx_gateway_transaction_id ON gateway_transactions(gateway_transaction_id);
+CREATE INDEX idx_user_gateway ON gateway_transactions(user_id, gateway_id);
+CREATE INDEX idx_status ON gateway_transactions(status);
 
 -- Insert default payment gateways (if not exists)
 INSERT INTO payment_gateways (gateway_name, display_name, gateway_type, is_enabled)
