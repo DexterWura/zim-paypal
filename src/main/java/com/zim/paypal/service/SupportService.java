@@ -121,6 +121,18 @@ public class SupportService {
     }
 
     /**
+     * Get tickets by status
+     * 
+     * @param status Ticket status
+     * @param pageable Pageable object
+     * @return Page of tickets
+     */
+    @Transactional(readOnly = true)
+    public Page<SupportTicket> getTicketsByStatus(SupportTicket.TicketStatus status, Pageable pageable) {
+        return supportTicketRepository.findByStatusOrderByCreatedAtDesc(status, pageable);
+    }
+
+    /**
      * Assign ticket to admin
      * 
      * @param ticketId Ticket ID

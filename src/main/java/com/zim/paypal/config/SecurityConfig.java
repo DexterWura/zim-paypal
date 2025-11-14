@@ -36,24 +36,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/api/**", "/h2-console/**") // Disable CSRF for API and H2 console
+            )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/register", "/login", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll() // Auth endpoints
                 .requestMatchers("/pay/**").permitAll() // Public payment links
                 .requestMatchers("/checkout/**").permitAll() // Public checkout pages
-                .requestMatchers("/api/**").authenticated() // All other API endpoints require auth
+                .requestMatchers("/api/**").authenticated() // All other API endpoints require auth (JWT)
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Stateless for API
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Use sessions for web login
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/dashboard", true)
+                .loginProcessingUrl("/login")
+                .usernameParameter("username")
+                .passwordParameter("password")
+                .defaultSuccessUrl("/dashboard", true) // Always redirect to dashboard after successful login
                 .failureUrl("/login?error=true")
                 .permitAll()
             )

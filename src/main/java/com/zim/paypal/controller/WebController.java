@@ -56,42 +56,7 @@ public class WebController {
         return "login";
     }
 
-    @GetMapping("/register")
-    public String showRegisterForm(Model model) {
-        model.addAttribute("registerRequest", new RegisterRequest());
-        return "register";
-    }
-
-    @PostMapping("/register")
-    public String register(@Valid @ModelAttribute RegisterRequest request,
-                          BindingResult result,
-                          RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            return "register";
-        }
-
-        try {
-            User user = User.builder()
-                    .username(request.getUsername())
-                    .email(request.getEmail())
-                    .password(request.getPassword())
-                    .firstName(request.getFirstName())
-                    .lastName(request.getLastName())
-                    .phoneNumber(request.getPhoneNumber())
-                    .build();
-
-            User savedUser = userService.registerUser(user);
-            
-            // Initialize rewards for new user
-            rewardsService.initializeRewards(savedUser);
-            
-            redirectAttributes.addFlashAttribute("success", "Registration successful! Please login.");
-            return "redirect:/login";
-        } catch (IllegalArgumentException e) {
-            result.rejectValue("username", "error.username", e.getMessage());
-            return "register";
-        }
-    }
+    // Registration endpoints moved to RegisterController to handle country restrictions and feature flags
 
     @GetMapping("/dashboard")
     public String dashboard(Authentication authentication, Model model) {

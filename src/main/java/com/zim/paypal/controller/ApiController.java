@@ -109,16 +109,7 @@ public class ApiController {
         }
     }
 
-    @GetMapping("/transactions")
-    public ResponseEntity<Page<Transaction>> getTransactions(
-            Authentication authentication,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        User user = userService.findByUsername(authentication.getName());
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Transaction> transactions = transactionService.getTransactionsByUser(user.getId(), pageable);
-        return ResponseEntity.ok(transactions);
-    }
+    // Transaction endpoints moved to TransactionApiController at /api/transactions
 
     @GetMapping("/cards")
     public ResponseEntity<List<Card>> getCards(Authentication authentication) {

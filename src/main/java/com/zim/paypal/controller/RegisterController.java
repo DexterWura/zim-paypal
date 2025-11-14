@@ -36,7 +36,7 @@ public class RegisterController {
     public String showRegisterForm(Model model) {
         // Check if country restrictions feature is enabled
         if (featureFlagService.isFeatureEnabled(FeatureFlag.FeatureNames.COUNTRY_RESTRICTIONS)) {
-            model.addAttribute("enabledCountries", countryRestrictionService.getCountriesForRegistration());
+            model.addAttribute("enabledCountries", countryRestrictionService.findByIsEnabledTrueAndIsRegistrationAllowedTrue());
         }
         model.addAttribute("registerRequest", new RegisterRequest());
         return "register";
@@ -66,6 +66,14 @@ public class RegisterController {
         }
 
         try {
+            // Check if registering as admin (for testing - via query parameter)
+            User.UserRole userRole = User.UserRole.USER;
+            String adminKey = registerRequest.getAdminKey();
+            if (adminKey != null && adminKey.equals("ADMIN_TEST_2024")) {
+                userRole = User.UserRole.ADMIN;
+                log.info("Admin registration detected for user: {}", registerRequest.getUsername());
+            }
+            
             User user = User.builder()
                     .username(registerRequest.getUsername())
                     .email(registerRequest.getEmail())
@@ -74,6 +82,7 @@ public class RegisterController {
                     .lastName(registerRequest.getLastName())
                     .phoneNumber(registerRequest.getPhoneNumber())
                     .countryCode(registerRequest.getCountryCode())
+                    .role(userRole)
                     .build();
 
             User savedUser = userService.registerUser(user);

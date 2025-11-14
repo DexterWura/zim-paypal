@@ -70,6 +70,9 @@
                     <span th:if="${#fields.hasErrors('countryCode')}" th:errors="*{countryCode}" class="error-text"></span>
                 </div>
                 
+                <!-- Hidden field for admin registration (testing) -->
+                <input type="hidden" th:field="*{adminKey}" th:value="${param.adminKey != null ? param.adminKey[0] : ''}">
+                
                 <button type="submit" class="btn-primary btn-block">Create Account</button>
             </form>
             

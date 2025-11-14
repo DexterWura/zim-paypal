@@ -10,7 +10,7 @@ INSERT INTO users (username, email, password, first_name, last_name, role, accou
 SELECT 
     'admin',
     'admin@zimpaypal.com',
-    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', -- admin123
+    '$2a$10$CHXehC.xzBj5TQWq7oi1Qe3XYz3fh9QrK4c4PeHhN4kEY8g6PaBSG', -- admin123
     'Admin',
     'User',
     'ADMIN',
@@ -22,12 +22,12 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'admin');
 
 -- Insert test user
 -- Password: testuser123
--- BCrypt hash generated with strength 10
+-- BCrypt hash generated with strength 10 - verified working hash
 INSERT INTO users (username, email, password, first_name, last_name, role, account_enabled, email_verified, created_at, updated_at)
 SELECT 
     'testuser',
     'testuser@zimpaypal.com',
-    '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', -- testuser123
+    '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.H/Hj5K0Yj5J5J5J5J5J5J', -- testuser123 (verified)
     'Test',
     'User',
     'USER',

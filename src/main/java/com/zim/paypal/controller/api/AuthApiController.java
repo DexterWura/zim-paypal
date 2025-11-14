@@ -76,7 +76,16 @@ public class AuthApiController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         try {
-            User user = userService.registerUser(request);
+            User user = User.builder()
+                    .username(request.getUsername())
+                    .email(request.getEmail())
+                    .password(request.getPassword())
+                    .firstName(request.getFirstName())
+                    .lastName(request.getLastName())
+                    .phoneNumber(request.getPhoneNumber())
+                    .countryCode(request.getCountryCode())
+                    .build();
+            user = userService.registerUser(user);
             UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
 
             String token = tokenProvider.generateToken(userDetails);

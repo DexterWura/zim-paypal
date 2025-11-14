@@ -47,8 +47,9 @@ public class ReversalService {
                 .orElseThrow(() -> new IllegalArgumentException("Transaction not found: " + reversalDto.getTransactionId()));
 
         // Validate user can request reversal for this transaction
-        if (!transaction.getFromAccount().getUser().getId().equals(userId) &&
-            !transaction.getToAccount().getUser().getId().equals(userId)) {
+        if ((transaction.getSender() != null && !transaction.getSender().getId().equals(userId)) &&
+            (transaction.getReceiver() != null && !transaction.getReceiver().getId().equals(userId)) &&
+            (transaction.getAccount() != null && !transaction.getAccount().getUser().getId().equals(userId))) {
             throw new IllegalArgumentException("You are not authorized to reverse this transaction");
         }
 
@@ -161,24 +162,30 @@ public class ReversalService {
 
         // Create reversal transaction
         Transaction reversalTransaction;
-        if (originalTransaction.getType() == Transaction.TransactionType.TRANSFER) {
+        if (originalTransaction.getTransactionType() == Transaction.TransactionType.TRANSFER) {
             // Reverse transfer: send money back
+            if (originalTransaction.getReceiver() == null || originalTransaction.getSender() == null) {
+                throw new IllegalStateException("Invalid transaction for reversal");
+            }
             reversalTransaction = transactionService.createTransfer(
-                    originalTransaction.getToAccount().getUser().getId(),
-                    originalTransaction.getFromAccount().getUser().getEmail(),
+                    originalTransaction.getReceiver().getId(),
+                    originalTransaction.getSender().getEmail(),
                     reversalAmount,
                     "Reversal: " + originalTransaction.getDescription()
             );
-        } else if (originalTransaction.getType() == Transaction.TransactionType.PAYMENT) {
+        } else if (originalTransaction.getTransactionType() == Transaction.TransactionType.PAYMENT) {
             // Reverse payment: refund to original payer
+            if (originalTransaction.getReceiver() == null || originalTransaction.getSender() == null) {
+                throw new IllegalStateException("Invalid transaction for reversal");
+            }
             reversalTransaction = transactionService.createTransfer(
-                    originalTransaction.getToAccount().getUser().getId(),
-                    originalTransaction.getFromAccount().getUser().getEmail(),
+                    originalTransaction.getReceiver().getId(),
+                    originalTransaction.getSender().getEmail(),
                     reversalAmount,
                     "Refund: " + originalTransaction.getDescription()
             );
         } else {
-            throw new IllegalStateException("Cannot reverse transaction type: " + originalTransaction.getType());
+            throw new IllegalStateException("Cannot reverse transaction type: " + originalTransaction.getTransactionType());
         }
 
         reversal.markAsProcessed(reversalTransaction);

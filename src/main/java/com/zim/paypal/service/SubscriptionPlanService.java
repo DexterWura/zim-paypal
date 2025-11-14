@@ -1,5 +1,6 @@
 package com.zim.paypal.service;
 
+import com.zim.paypal.model.entity.Currency;
 import com.zim.paypal.model.entity.SubscriptionPlan;
 import com.zim.paypal.model.entity.User;
 import com.zim.paypal.repository.SubscriptionPlanRepository;

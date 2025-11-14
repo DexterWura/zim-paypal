@@ -83,7 +83,7 @@ public class Notification {
      * Enumeration for notification types
      */
     public enum NotificationType {
-        TRANSACTION, STATEMENT, SECURITY, ACCOUNT_UPDATE, PAYMENT_REQUEST, DEPOSIT, WITHDRAWAL
+        TRANSACTION, STATEMENT, SECURITY, ACCOUNT_UPDATE, PAYMENT_REQUEST, DEPOSIT, WITHDRAWAL, PAYMENT_RECEIVED, PAYMENT_SENT
     }
 
     /**

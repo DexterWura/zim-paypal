@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
  * 
  * @author dexterwura
  */
-@RestController
+@RestController("reportApiController")
 @RequestMapping("/api/reports")
 @RequiredArgsConstructor
 @Slf4j

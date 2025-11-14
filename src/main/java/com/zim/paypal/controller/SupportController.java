@@ -136,9 +136,7 @@ public class SupportController {
         if (status != null && !status.isEmpty()) {
             try {
                 SupportTicket.TicketStatus ticketStatus = SupportTicket.TicketStatus.valueOf(status.toUpperCase());
-                tickets = supportService.getAllTickets(pageable);
-                // Filter by status in memory (in production, use proper query)
-                tickets = tickets.filter(t -> t.getStatus() == ticketStatus);
+                tickets = supportService.getTicketsByStatus(ticketStatus, pageable);
             } catch (IllegalArgumentException e) {
                 tickets = supportService.getOpenTickets(pageable);
             }

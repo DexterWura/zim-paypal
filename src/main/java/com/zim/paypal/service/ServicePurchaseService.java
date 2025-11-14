@@ -44,7 +44,8 @@ public class ServicePurchaseService {
      */
     public ServicePurchase purchaseService(Long userId, ServicePurchaseDto purchaseDto) {
         User user = userService.findById(userId);
-        Account account = accountRepository.findByUser(user)
+        Account account = accountRepository.findByUser(user).stream()
+                .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Account not found for user"));
 
         ServiceProvider provider = providerRepository.findById(purchaseDto.getProviderId())
@@ -98,10 +99,11 @@ public class ServicePurchaseService {
         ServicePurchase savedPurchase = purchaseRepository.save(purchase);
 
         // Create transaction
-        Transaction transaction = transactionService.createWithdrawal(
+        Transaction transaction = transactionService.createPaymentFromWallet(
                 userId,
                 totalAmount,
-                "Service Purchase: " + purchaseDto.getServiceType() + " - " + provider.getProviderName()
+                "Service Purchase: " + purchaseDto.getServiceType() + " - " + provider.getProviderName(),
+                null
         );
 
         savedPurchase.setTransaction(transaction);

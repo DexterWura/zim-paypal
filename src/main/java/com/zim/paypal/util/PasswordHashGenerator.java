@@ -3,23 +3,21 @@ package com.zim.paypal.util;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
- * Utility class to generate BCrypt password hashes for database migrations
- * 
- * @author dexterwura
+ * Utility to generate BCrypt password hashes for database migrations
+ * Run this main method to generate correct hashes
  */
 public class PasswordHashGenerator {
-    
     public static void main(String[] args) {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         
-        String adminPassword = "admin123";
-        String testUserPassword = "testuser123";
-        
-        System.out.println("Admin password hash (admin123):");
-        System.out.println(encoder.encode(adminPassword));
+        System.out.println("=== BCrypt Password Hashes ===");
         System.out.println();
-        System.out.println("Test user password hash (testuser123):");
-        System.out.println(encoder.encode(testUserPassword));
+        System.out.println("Password: admin123");
+        System.out.println("Hash: " + encoder.encode("admin123"));
+        System.out.println();
+        System.out.println("Password: testuser123");
+        System.out.println("Hash: " + encoder.encode("testuser123"));
+        System.out.println();
     }
 }
 
