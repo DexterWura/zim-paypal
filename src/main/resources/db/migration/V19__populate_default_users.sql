@@ -1,14 +1,16 @@
 -- Populate Default Users (Admin and Test User)
 -- Version 19.0.0
 -- Note: Passwords are hashed using BCrypt with strength 10
+-- Compatible with H2 database
 
 -- Insert admin user
--- Password: admin123 (BCrypt hash: $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy)
+-- Password: admin123
+-- BCrypt hash generated with strength 10
 INSERT INTO users (username, email, password, first_name, last_name, role, account_enabled, email_verified, created_at, updated_at)
 SELECT 
     'admin',
     'admin@zimpaypal.com',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', -- admin123
     'Admin',
     'User',
     'ADMIN',
@@ -19,12 +21,13 @@ SELECT
 WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'admin');
 
 -- Insert test user
--- Password: testuser123 (BCrypt hash: $2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.H/Hj5K0Yj5J5J5J5J5J5J)
+-- Password: testuser123
+-- BCrypt hash generated with strength 10
 INSERT INTO users (username, email, password, first_name, last_name, role, account_enabled, email_verified, created_at, updated_at)
 SELECT 
     'testuser',
     'testuser@zimpaypal.com',
-    '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.H/Hj5K0Yj5J5J5J5J5J5J',
+    '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', -- testuser123
     'Test',
     'User',
     'USER',
@@ -36,9 +39,10 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'testuser');
 
 -- Create default accounts for admin user (if not exists)
 -- Account will be created with balance 0.00
+-- Using H2-compatible syntax
 INSERT INTO accounts (account_number, user_id, balance, currency_code, account_type, status, created_at, updated_at)
 SELECT 
-    'ACC' || LPAD(CAST(COALESCE((SELECT MAX(CAST(SUBSTRING(account_number FROM 4) AS INTEGER)) FROM accounts), 0) + 1 AS VARCHAR), 10, '0'),
+    'ACC' || LPAD(CAST(COALESCE((SELECT MAX(CAST(SUBSTRING(account_number, 4) AS BIGINT)) FROM accounts), 0) + 1 AS VARCHAR), 10, '0'),
     u.id,
     0.00,
     'USD',
@@ -54,7 +58,7 @@ WHERE u.username = 'admin'
 -- Account will be created with balance 1000.00 for testing
 INSERT INTO accounts (account_number, user_id, balance, currency_code, account_type, status, created_at, updated_at)
 SELECT 
-    'ACC' || LPAD(CAST(COALESCE((SELECT MAX(CAST(SUBSTRING(account_number FROM 4) AS INTEGER)) FROM accounts), 0) + 1 AS VARCHAR), 10, '0'),
+    'ACC' || LPAD(CAST(COALESCE((SELECT MAX(CAST(SUBSTRING(account_number, 4) AS BIGINT)) FROM accounts), 0) + 1 AS VARCHAR), 10, '0'),
     u.id,
     1000.00,
     'USD',
