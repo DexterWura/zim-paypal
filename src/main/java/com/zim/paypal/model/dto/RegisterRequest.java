@@ -41,5 +41,8 @@ public class RegisterRequest {
     private String lastName;
 
     private String phoneNumber;
+
+    @Size(max = 2, message = "Country code must be 2 characters")
+    private String countryCode;
 }
 
