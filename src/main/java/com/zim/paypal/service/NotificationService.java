@@ -293,5 +293,64 @@ public class NotificationService {
         
         return message.toString();
     }
+
+    /**
+     * Send ticket resolved notification
+     * 
+     * @param ticket SupportTicket entity
+     */
+    @Async
+    public void sendTicketResolvedNotification(com.zim.paypal.model.entity.SupportTicket ticket) {
+        try {
+            User user = ticket.getUser();
+            String subject = "Support Ticket Resolved: " + ticket.getTicketNumber();
+            String message = buildTicketResolvedMessage(user, ticket);
+            
+            // Send email
+            if (user.getEmail() != null && user.getEmailVerified()) {
+                Notification emailNotification = Notification.builder()
+                        .user(user)
+                        .notificationType(Notification.NotificationType.ACCOUNT_UPDATE)
+                        .channel(Notification.NotificationChannel.EMAIL)
+                        .recipient(user.getEmail())
+                        .subject(subject)
+                        .message(message)
+                        .status(Notification.NotificationStatus.PENDING)
+                        .referenceId(ticket.getTicketNumber())
+                        .build();
+                
+                emailNotification = notificationRepository.save(emailNotification);
+                
+                try {
+                    emailService.sendEmail(user.getEmail(), subject, message);
+                    emailNotification.markAsSent();
+                    notificationRepository.save(emailNotification);
+                } catch (Exception e) {
+                    emailNotification.markAsFailed(e.getMessage());
+                    notificationRepository.save(emailNotification);
+                    log.error("Failed to send email notification: {}", e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error sending ticket resolved notification: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Build ticket resolved message
+     */
+    private String buildTicketResolvedMessage(User user, com.zim.paypal.model.entity.SupportTicket ticket) {
+        StringBuilder message = new StringBuilder();
+        message.append("Hello ").append(user.getFirstName()).append(",\n\n");
+        message.append("Your support ticket has been resolved.\n\n");
+        message.append("Ticket Number: ").append(ticket.getTicketNumber()).append("\n");
+        message.append("Subject: ").append(ticket.getSubject()).append("\n");
+        if (ticket.getResolution() != null && !ticket.getResolution().isEmpty()) {
+            message.append("Resolution: ").append(ticket.getResolution()).append("\n");
+        }
+        message.append("\nThank you for contacting Zim PayPal support!");
+        
+        return message.toString();
+    }
 }
 

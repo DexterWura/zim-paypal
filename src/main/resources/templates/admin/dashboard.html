@@ -137,6 +137,22 @@
                         <div class="stat-value" th:text="${stats.recentTransactions}">0</div>
                     </div>
                 </div>
+
+                <div class="stat-card" th:if="${stats.totalTickets != null}">
+                    <div class="stat-icon">🎫</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Support Tickets</div>
+                        <div class="stat-value" th:text="${stats.totalTickets}">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card" th:if="${stats.openTickets != null}">
+                    <div class="stat-icon">🔓</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Open Tickets</div>
+                        <div class="stat-value" th:text="${stats.openTickets}">0</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Quick Actions -->
@@ -154,6 +170,10 @@
                     <a th:href="@{/admin/accounts}" class="quick-action-btn">
                         <span class="action-icon">💰</span>
                         <span>Manage Accounts</span>
+                    </a>
+                    <a th:href="@{/support/admin/tickets}" class="quick-action-btn">
+                        <span class="action-icon">🎫</span>
+                        <span>Support Tickets</span>
                     </a>
                 </div>
             </div>

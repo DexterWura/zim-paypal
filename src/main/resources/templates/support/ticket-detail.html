@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Details - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Support Ticket: <span th:text="${ticket.ticketNumber}"></span></h1>
+                <a th:href="@{/support/tickets}" class="btn-secondary">← Back to Tickets</a>
+            </div>
+
+            <!-- Ticket Info -->
+            <div class="card">
+                <div class="ticket-info-header">
+                    <div>
+                        <h3 th:text="${ticket.subject}"></h3>
+                        <div class="ticket-meta">
+                            <span class="badge-role" th:text="${ticket.category}"></span>
+                            <span class="priority-badge" 
+                                  th:classappend="${'priority-' + ticket.priority.name().toLowerCase()}" 
+                                  th:text="${ticket.priority}">
+                            </span>
+                            <span class="status-badge" 
+                                  th:classappend="${'status-' + ticket.status.name().toLowerCase().replace('_', '-')}" 
+                                  th:text="${ticket.status}">
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="ticket-description">
+                    <strong>Description:</strong>
+                    <p th:text="${ticket.description}"></p>
+                </div>
+                <div class="ticket-details">
+                    <div><strong>Created:</strong> <span th:text="${#temporals.format(ticket.createdAt, 'MMM dd, yyyy HH:mm')}"></span></div>
+                    <div th:if="${ticket.assignedTo != null}">
+                        <strong>Assigned to:</strong> <span th:text="${ticket.assignedTo.username}"></span>
+                    </div>
+                    <div th:if="${ticket.resolution != null}">
+                        <strong>Resolution:</strong> <span th:text="${ticket.resolution}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Actions -->
+            <div class="card" th:if="${isAdmin}">
+                <h3>Admin Actions</h3>
+                <div class="admin-actions-grid">
+                    <form th:action="@{/support/admin/tickets/{id}/assign(id=${ticket.id})}" method="post" class="action-form">
+                        <div class="form-group">
+                            <label>Assign to Admin</label>
+                            <select name="adminId" class="form-control" required>
+                                <option value="">Select Admin</option>
+                                <!-- In production, populate with actual admins -->
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary btn-block">Assign</button>
+                    </form>
+
+                    <form th:action="@{/support/admin/tickets/{id}/status(id=${ticket.id})}" method="post" class="action-form">
+                        <div class="form-group">
+                            <label>Update Status</label>
+                            <select name="status" class="form-control" required>
+                                <option th:each="stat : ${T(com.zim.paypal.model.entity.SupportTicket.TicketStatus).values()}" 
+                                        th:value="${stat}" 
+                                        th:selected="${stat == ticket.status}"
+                                        th:text="${stat}">
+                                </option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary btn-block">Update Status</button>
+                    </form>
+
+                    <form th:action="@{/support/admin/tickets/{id}/resolve(id=${ticket.id})}" method="post" class="action-form">
+                        <div class="form-group">
+                            <label>Resolution</label>
+                            <textarea name="resolution" class="form-control" rows="3" required placeholder="Enter resolution..."></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary btn-block">Resolve Ticket</button>
+                    </form>
+
+                    <form th:action="@{/support/admin/tickets/{id}/close(id=${ticket.id})}" method="post" class="action-form">
+                        <button type="submit" class="btn-secondary btn-block">Close Ticket</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="card">
+                <h3>Conversation</h3>
+                <div class="ticket-messages">
+                    <div th:each="message : ${messages}" class="message-item" 
+                         th:classappend="${message.sender.id == user.id ? 'message-sent' : 'message-received'}">
+                        <div class="message-header">
+                            <strong th:text="${message.sender.username}"></strong>
+                            <span class="message-time" th:text="${#temporals.format(message.createdAt, 'MMM dd, yyyy HH:mm')}"></span>
+                            <span th:if="${message.isInternal && isAdmin}" class="badge-status">Internal</span>
+                        </div>
+                        <div class="message-content" th:text="${message.message}"></div>
+                    </div>
+                </div>
+
+                <!-- Add Message -->
+                <div class="add-message">
+                    <h4>Add Reply</h4>
+                    <form th:action="@{/support/tickets/{id}/message(id=${ticket.id})}" th:object="${messageDto}" method="post">
+                        <div class="form-group">
+                            <textarea th:field="*{message}" class="form-control" rows="4" required placeholder="Type your message..."></textarea>
+                            <span th:if="${#fields.hasErrors('message')}" th:errors="*{message}" class="error-text"></span>
+                        </div>
+                        <div class="form-group" th:if="${isAdmin}">
+                            <label>
+                                <input type="checkbox" th:field="*{isInternal}"> Internal note (only visible to admins)
+                            </label>
+                        </div>
+                        <button type="submit" class="btn-primary">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

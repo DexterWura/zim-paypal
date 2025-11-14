@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Tickets - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">Dashboard</a>
+                    <a th:href="@{/admin/users}" class="nav-link">Users</a>
+                    <a th:href="@{/admin/transactions}" class="nav-link">Transactions</a>
+                    <a th:href="@{/admin/accounts}" class="nav-link">Accounts</a>
+                    <a th:href="@{/support/admin/tickets}" class="nav-link active">Support</a>
+                </nav>
+                <div class="header-actions">
+                    <a th:href="@{/dashboard}" class="btn-secondary">User View</a>
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Support Tickets Management</h1>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-grid" style="margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Tickets</div>
+                        <div class="stat-value" th:text="${stats.totalTickets}">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔓</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Open Tickets</div>
+                        <div class="stat-value" th:text="${stats.openTickets}">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚙️</div>
+                    <div class="stat-content">
+                        <div class="stat-label">In Progress</div>
+                        <div class="stat-value" th:text="${stats.inProgressTickets}">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Resolved</div>
+                        <div class="stat-value" th:text="${stats.resolvedTickets}">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter -->
+            <div class="card">
+                <form th:action="@{/support/admin/tickets}" method="get" class="search-form">
+                    <select name="status" class="form-control">
+                        <option value="">All Statuses</option>
+                        <option th:each="stat : ${T(com.zim.paypal.model.entity.SupportTicket.TicketStatus).values()}" 
+                                th:value="${stat}" 
+                                th:selected="${stat.name() == status}"
+                                th:text="${stat}">
+                        </option>
+                    </select>
+                    <button type="submit" class="btn-primary">Filter</button>
+                    <a th:href="@{/support/admin/tickets}" class="btn-secondary">Clear</a>
+                </form>
+            </div>
+
+            <!-- Tickets Table -->
+            <div class="card">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Ticket #</th>
+                            <th>User</th>
+                            <th>Subject</th>
+                            <th>Category</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Assigned To</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ticket : ${tickets.content}">
+                            <td th:text="${ticket.ticketNumber}"></td>
+                            <td th:text="${ticket.user.username}"></td>
+                            <td th:text="${ticket.subject}"></td>
+                            <td th:text="${ticket.category}"></td>
+                            <td>
+                                <span class="priority-badge" 
+                                      th:classappend="${'priority-' + ticket.priority.name().toLowerCase()}" 
+                                      th:text="${ticket.priority}">
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${'status-' + ticket.status.name().toLowerCase().replace('_', '-')}" 
+                                      th:text="${ticket.status}">
+                                </span>
+                            </td>
+                            <td th:text="${ticket.assignedTo != null ? ticket.assignedTo.username : 'Unassigned'}"></td>
+                            <td th:text="${#temporals.format(ticket.createdAt, 'MMM dd, yyyy')}"></td>
+                            <td>
+                                <a th:href="@{/support/admin/tickets/{id}(id=${ticket.id})}" class="btn-secondary btn-small">View</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination" th:if="${tickets.totalPages > 1}">
+                    <a th:href="@{/support/admin/tickets(page=${currentPage > 0 ? currentPage - 1 : 0}, status=${status})}" 
+                       th:classappend="${currentPage == 0 ? 'disabled' : ''}">Previous</a>
+                    <span th:text="${'Page ' + (currentPage + 1) + ' of ' + totalPages}"></span>
+                    <a th:href="@{/support/admin/tickets(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage}, status=${status})}" 
+                       th:classappend="${currentPage >= totalPages - 1 ? 'disabled' : ''}">Next</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

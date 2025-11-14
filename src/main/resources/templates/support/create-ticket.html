@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Support Ticket - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Create Support Ticket</h1>
+                <a th:href="@{/support/tickets}" class="btn-secondary">← Back to Tickets</a>
+            </div>
+
+            <div class="form-container">
+                <form th:action="@{/support/tickets/new}" th:object="${ticketDto}" method="post" class="form-card">
+                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-error">
+                        <ul>
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" th:field="*{subject}" class="form-control" required placeholder="Brief description of your issue">
+                        <span th:if="${#fields.hasErrors('subject')}" th:errors="*{subject}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" th:field="*{category}" class="form-control" required>
+                            <option value="">Select Category</option>
+                            <option th:each="cat : ${T(com.zim.paypal.model.entity.SupportTicket.TicketCategory).values()}" 
+                                    th:value="${cat}" th:text="${cat}"></option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('category')}" th:errors="*{category}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="priority">Priority</label>
+                        <select id="priority" th:field="*{priority}" class="form-control">
+                            <option value="">Select Priority (Optional)</option>
+                            <option th:each="pri : ${T(com.zim.paypal.model.entity.SupportTicket.TicketPriority).values()}" 
+                                    th:value="${pri}" th:text="${pri}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" th:field="*{description}" class="form-control" rows="8" required 
+                                  placeholder="Please provide detailed information about your issue..."></textarea>
+                        <span th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="error-text"></span>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large">Submit Ticket</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

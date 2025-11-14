@@ -29,10 +29,18 @@ import java.util.Map;
 public class AdminController {
 
     private final AdminService adminService;
+    private final com.zim.paypal.service.SupportService supportService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         Map<String, Object> statistics = adminService.getDashboardStatistics();
+        // Add support ticket statistics
+        try {
+            Map<String, Object> ticketStats = supportService.getTicketStatistics();
+            statistics.putAll(ticketStats);
+        } catch (Exception e) {
+            // Support service might not be initialized
+        }
         model.addAttribute("stats", statistics);
         return "admin/dashboard";
     }
