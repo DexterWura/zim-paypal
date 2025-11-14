@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Service Purchases - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>My Service Purchases</h1>
+                <a th:href="@{/services/buy}" class="btn-primary">Buy Services</a>
+            </div>
+
+            <div class="card">
+                <div class="ticket-table">
+                    <div class="ticket-header-row">
+                        <div>Reference #</div>
+                        <div>Service</div>
+                        <div>Provider</div>
+                        <div>Recipient</div>
+                        <div>Amount</div>
+                        <div>Status</div>
+                        <div>Created</div>
+                        <div>Actions</div>
+                    </div>
+                    <div th:each="purchase : ${purchases.content}" class="ticket-row">
+                        <div th:text="${purchase.referenceNumber}"></div>
+                        <div th:text="${purchase.serviceType}"></div>
+                        <div th:text="${purchase.serviceProvider.providerName}"></div>
+                        <div th:text="${purchase.recipientNumber}"></div>
+                        <div th:text="${'$' + #numbers.formatDecimal(purchase.totalAmount, 1, 2)}"></div>
+                        <div>
+                            <span class="status-badge" 
+                                  th:classappend="${'status-' + purchase.status.name().toLowerCase().replace('_', '-')}" 
+                                  th:text="${purchase.status}">
+                            </span>
+                        </div>
+                        <div th:text="${#temporals.format(purchase.createdAt, 'MMM dd, yyyy')}"></div>
+                        <div>
+                            <a th:href="@{/services/{referenceNumber}(referenceNumber=${purchase.referenceNumber})}" class="btn-secondary btn-small">View</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pagination" th:if="${purchases.totalPages > 1}">
+                    <a th:href="@{/services/my-purchases(page=${currentPage > 0 ? currentPage - 1 : 0})}" 
+                       th:classappend="${currentPage == 0 ? 'disabled' : ''}">Previous</a>
+                    <span th:text="${'Page ' + (currentPage + 1) + ' of ' + totalPages}"></span>
+                    <a th:href="@{/services/my-purchases(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage})}" 
+                       th:classappend="${currentPage >= totalPages - 1 ? 'disabled' : ''}">Next</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

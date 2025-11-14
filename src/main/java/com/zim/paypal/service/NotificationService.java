@@ -537,5 +537,70 @@ public class NotificationService {
         
         return message.toString();
     }
+
+    /**
+     * Send service purchase notification
+     * 
+     * @param purchase ServicePurchase entity
+     */
+    @Async
+    public void sendServicePurchaseNotification(com.zim.paypal.model.entity.ServicePurchase purchase) {
+        try {
+            User user = purchase.getUser();
+            String subject = "Service Purchase: " + purchase.getServiceType() + " - " + purchase.getReferenceNumber();
+            String message = buildServicePurchaseMessage(user, purchase);
+            
+            // Send email
+            if (user.getEmail() != null && user.getEmailVerified()) {
+                Notification emailNotification = Notification.builder()
+                        .user(user)
+                        .notificationType(Notification.NotificationType.PAYMENT_SENT)
+                        .channel(Notification.NotificationChannel.EMAIL)
+                        .recipient(user.getEmail())
+                        .subject(subject)
+                        .message(message)
+                        .status(Notification.NotificationStatus.PENDING)
+                        .referenceId(purchase.getReferenceNumber())
+                        .build();
+                
+                emailNotification = notificationRepository.save(emailNotification);
+                
+                try {
+                    emailService.sendEmail(user.getEmail(), subject, message);
+                    emailNotification.markAsSent();
+                    notificationRepository.save(emailNotification);
+                } catch (Exception e) {
+                    emailNotification.markAsFailed(e.getMessage());
+                    notificationRepository.save(emailNotification);
+                    log.error("Failed to send email notification: {}", e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error sending service purchase notification: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Build service purchase message
+     */
+    private String buildServicePurchaseMessage(User user, com.zim.paypal.model.entity.ServicePurchase purchase) {
+        StringBuilder message = new StringBuilder();
+        message.append("Hello ").append(user.getFirstName()).append(",\n\n");
+        message.append("Your service purchase has been processed.\n\n");
+        message.append("Reference Number: ").append(purchase.getReferenceNumber()).append("\n");
+        message.append("Service Type: ").append(purchase.getServiceType()).append("\n");
+        message.append("Provider: ").append(purchase.getServiceProvider().getProviderName()).append("\n");
+        message.append("Recipient: ").append(purchase.getRecipientNumber()).append("\n");
+        message.append("Amount: $").append(purchase.getAmount()).append("\n");
+        message.append("Service Fee: $").append(purchase.getServiceFee()).append("\n");
+        message.append("Total: $").append(purchase.getTotalAmount()).append("\n");
+        message.append("Status: ").append(purchase.getStatus()).append("\n");
+        if (purchase.getProviderReference() != null) {
+            message.append("Provider Reference: ").append(purchase.getProviderReference()).append("\n");
+        }
+        message.append("\nThank you for using Zim PayPal!");
+        
+        return message.toString();
+    }
 }
 

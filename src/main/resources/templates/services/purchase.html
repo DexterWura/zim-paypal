@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Services - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Buy Services</h1>
+                <a th:href="@{/services/my-purchases}" class="btn-secondary">← My Purchases</a>
+            </div>
+
+            <div class="form-container">
+                <form th:action="@{/services/buy}" th:object="${purchaseDto}" method="post" class="form-card">
+                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-error">
+                        <ul>
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="serviceType">Service Type</label>
+                        <select id="serviceType" name="serviceType" class="form-control" required onchange="updateProviders()">
+                            <option value="">Select Service Type</option>
+                            <option th:each="type : ${serviceTypes}" 
+                                    th:value="${type}" 
+                                    th:selected="${purchaseDto.serviceType == type}"
+                                    th:text="${type}">
+                            </option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('serviceType')}" th:errors="*{serviceType}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="providerId">Service Provider</label>
+                        <select id="providerId" th:field="*{providerId}" class="form-control" required>
+                            <option value="">Select Provider</option>
+                            <option th:each="provider : ${providers}" 
+                                    th:value="${provider.id}" 
+                                    th:text="${provider.providerName}">
+                            </option>
+                        </select>
+                        <span th:if="${#fields.hasErrors('providerId')}" th:errors="*{providerId}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recipientNumber" th:text="${purchaseDto.serviceType == T(com.zim.paypal.model.entity.ServicePurchase.ServiceType).ZESA_TOKEN ? 'Meter Number' : 'Phone Number'}">Recipient Number</label>
+                        <input type="text" id="recipientNumber" th:field="*{recipientNumber}" class="form-control" required 
+                               placeholder="Enter phone/meter number">
+                        <span th:if="${#fields.hasErrors('recipientNumber')}" th:errors="*{recipientNumber}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">Amount</label>
+                        <div class="input-group">
+                            <span class="input-prefix">$</span>
+                            <input type="number" id="amount" th:field="*{amount}" class="form-control" 
+                                   step="0.01" min="0.01" required placeholder="0.00">
+                        </div>
+                        <span th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-group" th:if="${purchaseDto.serviceType == T(com.zim.paypal.model.entity.ServicePurchase.ServiceType).DATA}">
+                        <label for="bundleSize">Bundle Size (Optional)</label>
+                        <input type="text" id="bundleSize" th:field="*{bundleSize}" class="form-control" 
+                               placeholder="e.g., 1GB, 500MB">
+                    </div>
+
+                    <div class="form-group" th:if="${purchaseDto.serviceType == T(com.zim.paypal.model.entity.ServicePurchase.ServiceType).ZESA_TOKEN}">
+                        <label for="meterNumber">Meter Number</label>
+                        <input type="text" id="meterNumber" th:field="*{meterNumber}" class="form-control" 
+                               placeholder="Enter meter number">
+                    </div>
+
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> Service fees may apply. The total amount will be deducted from your account balance.
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-block btn-large">Purchase</button>
+                </form>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="card" style="margin-top: 2rem;">
+                <h3>Quick Purchase</h3>
+                <div class="quick-actions-grid">
+                    <a th:href="@{/services/buy(type=AIRTIME)}" class="quick-action-item">
+                        <div class="quick-action-icon">📱</div>
+                        <span>Buy Airtime</span>
+                    </a>
+                    <a th:href="@{/services/buy(type=DATA)}" class="quick-action-item">
+                        <div class="quick-action-icon">📶</div>
+                        <span>Buy Data</span>
+                    </a>
+                    <a th:href="@{/services/buy(type=ZESA_TOKEN)}" class="quick-action-item">
+                        <div class="quick-action-icon">⚡</div>
+                        <span>Buy ZESA Token</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function updateProviders() {
+            const serviceType = document.getElementById('serviceType').value;
+            if (serviceType) {
+                window.location.href = '/services/buy?type=' + serviceType;
+            }
+        }
+    </script>
+</body>
+</html>
+

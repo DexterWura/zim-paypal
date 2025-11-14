@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Details - Zim PayPal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a th:href="@{/}">
+                        <span class="logo-icon">P</span>
+                        <span class="logo-text">Zim PayPal</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
+                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
+                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                </nav>
+                <div class="header-actions">
+                    <form th:action="@{/logout}" method="post" class="logout-form">
+                        <button type="submit" class="btn-logout">LOG OUT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Purchase: <span th:text="${purchase.referenceNumber}"></span></h1>
+                <a th:href="@{/services/my-purchases}" class="btn-secondary">← Back to Purchases</a>
+            </div>
+
+            <!-- Purchase Info -->
+            <div class="card">
+                <div class="ticket-info-header">
+                    <div>
+                        <h3 th:text="${purchase.serviceType + ' - ' + purchase.serviceProvider.providerName}"></h3>
+                        <div class="ticket-meta">
+                            <span class="badge-role" th:text="${purchase.serviceType}"></span>
+                            <span class="status-badge" 
+                                  th:classappend="${'status-' + purchase.status.name().toLowerCase().replace('_', '-')}" 
+                                  th:text="${purchase.status}">
+                            </span>
+                        </div>
+                    </div>
+                    <div class="split-amount-section">
+                        <div class="split-total">
+                            <div class="split-label">Total Amount</div>
+                            <div class="split-amount-large" th:text="${'$' + #numbers.formatDecimal(purchase.totalAmount, 1, 2)}">$0.00</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ticket-details">
+                    <div><strong>Reference Number:</strong> <span th:text="${purchase.referenceNumber}"></span></div>
+                    <div><strong>Service Type:</strong> <span th:text="${purchase.serviceType}"></span></div>
+                    <div><strong>Provider:</strong> <span th:text="${purchase.serviceProvider.providerName}"></span></div>
+                    <div><strong>Recipient:</strong> <span th:text="${purchase.recipientNumber}"></span></div>
+                    <div><strong>Amount:</strong> <span th:text="${'$' + #numbers.formatDecimal(purchase.amount, 1, 2)}"></span></div>
+                    <div th:if="${purchase.serviceFee.compareTo(java.math.BigDecimal.ZERO) > 0}">
+                        <strong>Service Fee:</strong> <span th:text="${'$' + #numbers.formatDecimal(purchase.serviceFee, 1, 2)}"></span>
+                    </div>
+                    <div><strong>Total:</strong> <span th:text="${'$' + #numbers.formatDecimal(purchase.totalAmount, 1, 2)}"></span></div>
+                    <div><strong>Status:</strong> <span th:text="${purchase.status}"></span></div>
+                    <div><strong>Created:</strong> <span th:text="${#temporals.format(purchase.createdAt, 'MMM dd, yyyy HH:mm')}"></span></div>
+                    <div th:if="${purchase.providerReference != null}">
+                        <strong>Provider Reference:</strong> <span th:text="${purchase.providerReference}"></span>
+                    </div>
+                    <div th:if="${purchase.processedAt != null}">
+                        <strong>Processed At:</strong> <span th:text="${#temporals.format(purchase.processedAt, 'MMM dd, yyyy HH:mm')}"></span>
+                    </div>
+                    <div th:if="${purchase.errorMessage != null}">
+                        <strong>Error:</strong> <span style="color: var(--error-red);" th:text="${purchase.errorMessage}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+
