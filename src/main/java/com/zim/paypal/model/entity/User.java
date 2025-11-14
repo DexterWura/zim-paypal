@@ -65,6 +65,10 @@ public class User {
     @Size(max = 20, message = "Phone number must not exceed 20 characters")
     private String phoneNumber;
 
+    @Column(name = "country_code", length = 2)
+    @Size(max = 2, message = "Country code must be 2 characters")
+    private String countryCode;
+
     @Column(name = "email_verified")
     @Builder.Default
     private Boolean emailVerified = false;

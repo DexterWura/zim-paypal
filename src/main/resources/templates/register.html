@@ -58,6 +58,18 @@
                     <input type="tel" id="phoneNumber" th:field="*{phoneNumber}" class="form-control">
                 </div>
                 
+                <div class="form-group" th:if="${enabledCountries != null}">
+                    <label for="countryCode">Country *</label>
+                    <select id="countryCode" th:field="*{countryCode}" class="form-control" required>
+                        <option value="">Select Country</option>
+                        <option th:each="country : ${enabledCountries}" 
+                                th:value="${country.countryCode}" 
+                                th:text="${country.countryName + ' (' + country.countryCode + ')'}">
+                        </option>
+                    </select>
+                    <span th:if="${#fields.hasErrors('countryCode')}" th:errors="*{countryCode}" class="error-text"></span>
+                </div>
+                
                 <button type="submit" class="btn-primary btn-block">Create Account</button>
             </form>
             

@@ -113,6 +113,16 @@ public class CountryRestrictionService {
     }
 
     /**
+     * Find countries where registration is allowed
+     * 
+     * @return List of countries
+     */
+    @Transactional(readOnly = true)
+    public List<CountryRestriction> findByIsEnabledTrueAndIsRegistrationAllowedTrue() {
+        return countryRestrictionRepository.findByIsEnabledTrueAndIsRegistrationAllowedTrue();
+    }
+
+    /**
      * Create or update country restriction
      * 
      * @param countryRestriction CountryRestriction entity

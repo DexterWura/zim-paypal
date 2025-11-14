@@ -36,6 +36,8 @@ public class MerchantController {
     private final MerchantApiKeyService apiKeyService;
     private final CurrencyService currencyService;
     private final UserService userService;
+    private final FeatureFlagService featureFlagService;
+    private final CountryRestrictionService countryRestrictionService;
 
     @Value("${app.base-url:http://localhost:80}")
     private String baseUrl;

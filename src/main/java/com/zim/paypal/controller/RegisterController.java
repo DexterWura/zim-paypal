@@ -1,8 +1,11 @@
 package com.zim.paypal.controller;
 
-import com.zim.paypal.model.dto.RegisterDto;
+import com.zim.paypal.model.dto.RegisterRequest;
+import com.zim.paypal.model.entity.FeatureFlag;
+import com.zim.paypal.model.entity.User;
 import com.zim.paypal.service.CountryRestrictionService;
 import com.zim.paypal.service.FeatureFlagService;
+import com.zim.paypal.service.RewardsService;
 import com.zim.paypal.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,24 +30,25 @@ public class RegisterController {
     private final UserService userService;
     private final FeatureFlagService featureFlagService;
     private final CountryRestrictionService countryRestrictionService;
+    private final RewardsService rewardsService;
 
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         // Check if country restrictions feature is enabled
         if (featureFlagService.isFeatureEnabled(FeatureFlag.FeatureNames.COUNTRY_RESTRICTIONS)) {
-            model.addAttribute("enabledCountries", countryRestrictionService.getEnabledCountries());
+            model.addAttribute("enabledCountries", countryRestrictionService.getCountriesForRegistration());
         }
-        model.addAttribute("registerDto", new RegisterDto());
+        model.addAttribute("registerRequest", new RegisterRequest());
         return "register";
     }
 
     @PostMapping("/register")
-    public String register(@Valid RegisterDto registerDto, BindingResult result, Model model,
+    public String register(@Valid RegisterRequest registerRequest, BindingResult result, Model model,
                           RedirectAttributes redirectAttributes) {
         // Check if country restrictions feature is enabled
         if (featureFlagService.isFeatureEnabled(FeatureFlag.FeatureNames.COUNTRY_RESTRICTIONS)) {
-            if (registerDto.getCountryCode() != null && !registerDto.getCountryCode().isEmpty()) {
-                if (!countryRestrictionService.isRegistrationAllowed(registerDto.getCountryCode())) {
+            if (registerRequest.getCountryCode() != null && !registerRequest.getCountryCode().isEmpty()) {
+                if (!countryRestrictionService.isRegistrationAllowed(registerRequest.getCountryCode())) {
                     result.rejectValue("countryCode", "error.countryCode", 
                             "Registration is not allowed from your country");
                 }
@@ -56,19 +60,37 @@ public class RegisterController {
 
         if (result.hasErrors()) {
             if (featureFlagService.isFeatureEnabled(FeatureFlag.FeatureNames.COUNTRY_RESTRICTIONS)) {
-                model.addAttribute("enabledCountries", countryRestrictionService.getEnabledCountries());
+                model.addAttribute("enabledCountries", countryRestrictionService.findByIsEnabledTrueAndIsRegistrationAllowedTrue());
             }
             return "register";
         }
 
         try {
-            userService.register(registerDto);
+            User user = User.builder()
+                    .username(registerRequest.getUsername())
+                    .email(registerRequest.getEmail())
+                    .password(registerRequest.getPassword())
+                    .firstName(registerRequest.getFirstName())
+                    .lastName(registerRequest.getLastName())
+                    .phoneNumber(registerRequest.getPhoneNumber())
+                    .countryCode(registerRequest.getCountryCode())
+                    .build();
+
+            User savedUser = userService.registerUser(user);
+            
+            // Initialize rewards for new user
+            try {
+                rewardsService.initializeRewards(savedUser);
+            } catch (Exception e) {
+                log.warn("Failed to initialize rewards: {}", e.getMessage());
+            }
+            
             redirectAttributes.addFlashAttribute("success", "Registration successful! Please login.");
             return "redirect:/login";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
             if (featureFlagService.isFeatureEnabled(FeatureFlag.FeatureNames.COUNTRY_RESTRICTIONS)) {
-                model.addAttribute("enabledCountries", countryRestrictionService.getEnabledCountries());
+                model.addAttribute("enabledCountries", countryRestrictionService.findByIsEnabledTrueAndIsRegistrationAllowedTrue());
             }
             return "register";
         }

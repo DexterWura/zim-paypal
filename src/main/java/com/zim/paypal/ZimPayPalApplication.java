@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableAsync
 @EnableScheduling
 @EnableTransactionManagement
+@org.springframework.cache.annotation.EnableCaching
 public class ZimPayPalApplication {
 
     public static void main(String[] args) {
