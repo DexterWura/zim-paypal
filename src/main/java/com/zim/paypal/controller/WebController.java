@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,6 +38,8 @@ public class WebController {
     private final MoneyRequestService moneyRequestService;
     private final RewardsService rewardsService;
     private final BillSplitService billSplitService;
+    private final PaymentGatewayService paymentGatewayService;
+    private final GatewayTransactionService gatewayTransactionService;
 
     @GetMapping("/")
     public String home() {
@@ -122,6 +125,8 @@ public class WebController {
 
     @GetMapping("/deposit")
     public String showDepositForm(Model model) {
+        List<PaymentGateway> gateways = paymentGatewayService.getEnabledGateways();
+        model.addAttribute("gateways", gateways);
         model.addAttribute("depositRequest", new DepositRequest());
         return "deposit";
     }
@@ -130,16 +135,35 @@ public class WebController {
     public String deposit(@Valid @ModelAttribute DepositRequest request,
                          BindingResult result,
                          Authentication authentication,
+                         Model model,
                          RedirectAttributes redirectAttributes) {
+        List<PaymentGateway> gateways = paymentGatewayService.getEnabledGateways();
+        model.addAttribute("gateways", gateways);
+        
         if (result.hasErrors()) {
             return "deposit";
         }
 
         try {
             User user = userService.findByUsername(authentication.getName());
-            Transaction transaction = transactionService.createDeposit(
-                    user.getId(), request.getAmount(), request.getDescription());
-            redirectAttributes.addFlashAttribute("success", "Deposit successful!");
+            
+            // If gateway is selected, use gateway transaction
+            if (request.getGatewayId() != null) {
+                GatewayTransaction gatewayTransaction = gatewayTransactionService.initiateDeposit(
+                        user.getId(),
+                        request.getGatewayId(),
+                        request.getAmount(),
+                        request.getPhoneNumber(),
+                        user.getEmail()
+                );
+                redirectAttributes.addFlashAttribute("success", 
+                    "Deposit initiated via " + gatewayTransaction.getGateway().getDisplayName() + "! Processing...");
+            } else {
+                // Direct deposit (admin only or fallback)
+                Transaction transaction = transactionService.createDeposit(
+                        user.getId(), request.getAmount(), request.getDescription());
+                redirectAttributes.addFlashAttribute("success", "Deposit successful!");
+            }
             return "redirect:/dashboard";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -208,9 +232,15 @@ public class WebController {
 
     @GetMapping("/statements")
     public String statements(Authentication authentication, Model model) {
-        User user = userService.findByUsername(authentication.getName());
-        List<Statement> statements = statementService.getStatementsByUser(user.getId());
-        model.addAttribute("statements", statements);
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            List<Statement> statements = statementService.getStatementsByUser(user.getId());
+            model.addAttribute("statements", statements != null ? statements : new ArrayList<>());
+        } catch (Exception e) {
+            log.error("Error loading statements: {}", e.getMessage());
+            model.addAttribute("statements", new ArrayList<>());
+            model.addAttribute("error", "Error loading statements: " + e.getMessage());
+        }
         return "statements";
     }
 

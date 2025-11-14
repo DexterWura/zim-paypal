@@ -54,7 +54,7 @@
                 </form>
             </div>
 
-            <div class="card" th:if="${!statements.isEmpty()}">
+            <div class="card" th:if="${statements != null && !statements.isEmpty()}">
                 <h3>Your Statements</h3>
                 <div class="statement-list">
                     <div th:each="statement : ${statements}" class="statement-item">
@@ -76,6 +76,10 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            
+            <div class="card" th:if="${statements == null || statements.isEmpty()}">
+                <p>No statements generated yet. Generate a statement using the form above.</p>
             </div>
         </div>
     </main>

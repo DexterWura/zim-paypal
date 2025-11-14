@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deposit - Zim PayPal</title>
+    <!-- FontAwesome 6.5.1 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
@@ -12,19 +14,19 @@
             <div class="header-content">
                 <div class="logo">
                     <a th:href="@{/}">
-                        <span class="logo-icon">P</span>
+                        <i class="fas fa-wallet"></i>
                         <span class="logo-text">Zim PayPal</span>
                     </a>
                 </div>
                 <nav class="nav">
-                    <a th:href="@{/dashboard}" class="nav-link">Home</a>
-                    <a th:href="@{/transactions}" class="nav-link">Activity</a>
-                    <a th:href="@{/cards}" class="nav-link">Wallet</a>
-                    <a th:href="@{/statements}" class="nav-link">Statements</a>
+                    <a th:href="@{/dashboard}" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                    <a th:href="@{/transactions}" class="nav-link"><i class="fas fa-exchange-alt"></i> Activity</a>
+                    <a th:href="@{/cards}" class="nav-link"><i class="fas fa-credit-card"></i> Wallet</a>
+                    <a th:href="@{/statements}" class="nav-link"><i class="fas fa-file-invoice"></i> Statements</a>
                 </nav>
                 <div class="header-actions">
                     <form th:action="@{/logout}" method="post" class="logout-form">
-                        <button type="submit" class="btn-logout">LOG OUT</button>
+                        <button type="submit" class="btn-logout"><i class="fas fa-sign-out-alt"></i> LOG OUT</button>
                     </form>
                 </div>
             </div>
@@ -34,7 +36,7 @@
     <main class="main">
         <div class="container">
             <div class="page-header">
-                <h1>Deposit Money</h1>
+                <h1><i class="fas fa-money-bill-wave"></i> Deposit Money</h1>
             </div>
 
             <div class="form-container">
@@ -46,7 +48,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="amount">Amount</label>
+                        <label for="amount"><i class="fas fa-dollar-sign"></i> Amount</label>
                         <div class="input-group">
                             <span class="input-prefix">$</span>
                             <input type="number" id="amount" th:field="*{amount}" class="form-control" step="0.01" min="0.01" required placeholder="0.00">
@@ -54,16 +56,70 @@
                         <span th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}" class="error-text"></span>
                     </div>
 
+                    <div class="form-group" th:if="${gateways != null && !gateways.isEmpty()}">
+                        <label for="gatewayId"><i class="fas fa-credit-card"></i> Payment Method</label>
+                        <select id="gatewayId" th:field="*{gatewayId}" class="form-control" onchange="togglePhoneNumber()">
+                            <option value="">Select Payment Method</option>
+                            <option th:each="gateway : ${gateways}" 
+                                    th:value="${gateway.id}" 
+                                    th:text="${gateway.displayName}"
+                                    th:attr="data-type=${gateway.gatewayType}">
+                            </option>
+                        </select>
+                        <small class="form-text text-muted">Choose how you want to deposit money</small>
+                    </div>
+
+                    <div class="form-group" id="phoneNumberGroup" style="display: none;">
+                        <label for="phoneNumber"><i class="fas fa-phone"></i> Phone Number</label>
+                        <input type="tel" id="phoneNumber" th:field="*{phoneNumber}" class="form-control" placeholder="e.g., 0771234567">
+                        <small class="form-text text-muted">Required for mobile money payments (EcoCash, PayNow)</small>
+                    </div>
+
                     <div class="form-group">
-                        <label for="description">Description (Optional)</label>
+                        <label for="description"><i class="fas fa-comment"></i> Description (Optional)</label>
                         <input type="text" id="description" th:field="*{description}" class="form-control" placeholder="Deposit description">
                     </div>
 
-                    <button type="submit" class="btn-primary btn-block btn-large">Deposit</button>
+                    <button type="submit" class="btn-primary btn-block btn-large">
+                        <i class="fas fa-plus-circle"></i> Deposit Money
+                    </button>
                 </form>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <h3><i class="fas fa-info-circle"></i> Available Payment Methods</h3>
+                <div class="gateway-list" th:if="${gateways != null && !gateways.isEmpty()}">
+                    <div th:each="gateway : ${gateways}" class="gateway-item">
+                        <div class="gateway-icon">
+                            <i th:if="${gateway.gatewayName == 'ECOCASH'}" class="fas fa-mobile-alt"></i>
+                            <i th:if="${gateway.gatewayName == 'PAYNOW_ZIM'}" class="fas fa-mobile-alt"></i>
+                            <i th:if="${gateway.gatewayName == 'PAYPAL'}" class="fab fa-paypal"></i>
+                        </div>
+                        <div class="gateway-info">
+                            <h4 th:text="${gateway.displayName}"></h4>
+                            <p th:text="${gateway.gatewayType == 'MOBILE_MONEY' ? 'Mobile Money Payment' : 'Online Payment'}"></p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
+
+    <script>
+        function togglePhoneNumber() {
+            const gatewaySelect = document.getElementById('gatewayId');
+            const phoneGroup = document.getElementById('phoneNumberGroup');
+            const selectedOption = gatewaySelect.options[gatewaySelect.selectedIndex];
+            const gatewayType = selectedOption.getAttribute('data-type');
+            
+            if (gatewayType === 'MOBILE_MONEY') {
+                phoneGroup.style.display = 'block';
+                document.getElementById('phoneNumber').required = true;
+            } else {
+                phoneGroup.style.display = 'none';
+                document.getElementById('phoneNumber').required = false;
+            }
+        }
+    </script>
 </body>
 </html>
-

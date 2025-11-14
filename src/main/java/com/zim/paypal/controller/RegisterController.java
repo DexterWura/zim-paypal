@@ -66,12 +66,11 @@ public class RegisterController {
         }
 
         try {
-            // Check if registering as admin (for testing - via query parameter)
+            // Determine user role from form selection
             User.UserRole userRole = User.UserRole.USER;
-            String adminKey = registerRequest.getAdminKey();
-            if (adminKey != null && adminKey.equals("ADMIN_TEST_2024")) {
+            if (registerRequest.getRole() != null && registerRequest.getRole().equalsIgnoreCase("ADMIN")) {
                 userRole = User.UserRole.ADMIN;
-                log.info("Admin registration detected for user: {}", registerRequest.getUsername());
+                log.info("Admin registration selected for user: {}", registerRequest.getUsername());
             }
             
             User user = User.builder()

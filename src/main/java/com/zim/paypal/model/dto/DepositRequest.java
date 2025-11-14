@@ -25,5 +25,9 @@ public class DepositRequest {
     private BigDecimal amount;
 
     private String description;
+    
+    private Long gatewayId;
+    
+    private String phoneNumber;
 }
 

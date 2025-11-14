@@ -45,7 +45,7 @@ public class RegisterRequest {
     @Size(max = 2, message = "Country code must be 2 characters")
     private String countryCode;
     
-    // Hidden field for admin registration (testing only)
-    private String adminKey;
+    // Role selection for registration
+    private String role;
 }
 

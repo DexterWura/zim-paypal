@@ -70,8 +70,16 @@
                     <span th:if="${#fields.hasErrors('countryCode')}" th:errors="*{countryCode}" class="error-text"></span>
                 </div>
                 
-                <!-- Hidden field for admin registration (testing) -->
-                <input type="hidden" th:field="*{adminKey}" th:value="${param.adminKey != null ? param.adminKey[0] : ''}">
+                <div class="form-group">
+                    <label for="role">Account Type *</label>
+                    <select id="role" th:field="*{role}" class="form-control" required>
+                        <option value="">Select Account Type</option>
+                        <option value="USER">User</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
+                    <span th:if="${#fields.hasErrors('role')}" th:errors="*{role}" class="error-text"></span>
+                    <small class="form-text text-muted">Select Admin to create an administrator account</small>
+                </div>
                 
                 <button type="submit" class="btn-primary btn-block">Create Account</button>
             </form>
