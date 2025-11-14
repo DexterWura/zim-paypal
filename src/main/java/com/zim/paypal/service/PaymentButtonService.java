@@ -112,6 +112,16 @@ public class PaymentButtonService {
     }
 
     /**
+     * Update payment button
+     * 
+     * @param button Payment button
+     * @return Updated button
+     */
+    public PaymentButton updatePaymentButton(PaymentButton button) {
+        return buttonRepository.save(button);
+    }
+
+    /**
      * Generate embed code for payment button
      * 
      * @param button Payment button
